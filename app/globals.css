@@ -1,26 +1,270 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f4f5;
+  --foreground: #18181b;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
+  margin: 0;
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+
+/* ==========================================================
+   MAK_SOCIOS_MICROANIMACIONES_V1
+   Animaciones ligeras:
+   únicamente opacity + transform.
+   ========================================================== */
+
+@keyframes makBackdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+@keyframes makSheetIn {
+  0% {
+    opacity: 0;
+    transform:
+      translateY(26px)
+      scale(0.86);
+  }
+
+  45% {
+    opacity: 1;
+    transform:
+      translateY(-4px)
+      scale(1.035);
+  }
+
+  68% {
+    transform:
+      translateY(1px)
+      scale(0.992);
+  }
+
+  84% {
+    transform:
+      translateY(-1px)
+      scale(1.008);
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+@keyframes makDialogIn {
+  0% {
+    opacity: 0;
+    transform:
+      translateY(12px)
+      scale(0.84);
+  }
+
+  42% {
+    opacity: 1;
+    transform:
+      translateY(-3px)
+      scale(1.04);
+  }
+
+  66% {
+    transform:
+      translateY(1px)
+      scale(0.99);
+  }
+
+  84% {
+    transform:
+      translateY(-1px)
+      scale(1.008);
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+@keyframes makViewIn {
+  0% {
+    opacity: 0;
+    transform:
+      translateY(7px)
+      scale(0.965);
+  }
+
+  55% {
+    opacity: 1;
+    transform:
+      translateY(-1px)
+      scale(1.012);
+  }
+
+  78% {
+    transform:
+      translateY(0)
+      scale(0.997);
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+.mak-modal-backdrop {
+  animation:
+    makBackdropIn
+    160ms
+    ease-out
+    both;
+}
+
+
+.mak-modal-sheet {
+  transform-origin:
+    center bottom;
+
+  animation:
+    makSheetIn
+    340ms
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    both;
+
+  will-change:
+    transform,
+    opacity;
+}
+
+
+.mak-view-enter {
+  animation:
+    makViewIn
+    230ms
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    both;
+
+  will-change:
+    transform,
+    opacity;
+}
+
+
+.mak-interactive {
+  transition:
+    transform 140ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+
+.mak-interactive:active {
+  transform:
+    scale(0.975);
+}
+
+
+@media (min-width: 640px) {
+
+  .mak-modal-sheet {
+    transform-origin:
+      center center;
+
+    animation-name:
+      makDialogIn;
+  }
+
+}
+
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  .mak-modal-backdrop,
+  .mak-modal-sheet,
+  .mak-view-enter {
+    animation:
+      none !important;
+  }
+
+  .mak-interactive {
+    transition:
+      none !important;
+  }
+
+  .mak-interactive:active {
+    transform:
+      none !important;
+  }
+
 }
