@@ -18,6 +18,7 @@ import {
 import ThemeToggle from '@/components/ThemeToggle'
 import MembershipCard from '@/components/MembershipCard'
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
+import RoutineCard from '@/components/RoutineCard'
 
 
 export default async function InicioPage() {
@@ -133,10 +134,8 @@ export default async function InicioPage() {
 
 
 
-    // =========================================================
-  // ACCESO A BENEFICIOS
-  //
-  // Debe calcularse DESPUÉS del simulador de vigencia.
+  // =========================================================
+  // ACCESO A BENEFICIOS EXCLUSIVOS
   // =========================================================
 
   const accesoBeneficios =
@@ -150,6 +149,38 @@ export default async function InicioPage() {
     membresia
       ?.estado_visual ||
     'sin_membresia'
+
+
+
+  let perfilFisico = null
+  let rutinaInicial = null
+
+  if (accesoBeneficios) {
+    const [
+      respuestaPerfil,
+      respuestaRutina,
+    ] = await Promise.all([
+      supabase.rpc(
+        'obtener_mi_perfil_fisico_app'
+      ),
+
+      supabase.rpc(
+        'obtener_mi_rutina_app'
+      ),
+    ])
+
+
+    if (!respuestaPerfil.error) {
+      perfilFisico =
+        respuestaPerfil.data
+    }
+
+
+    if (!respuestaRutina.error) {
+      rutinaInicial =
+        respuestaRutina.data
+    }
+  }
 
 
   return (
@@ -308,15 +339,19 @@ export default async function InicioPage() {
 
 
 
-          <ExclusiveBenefitCard
-            tipo="rutina"
-            titulo="Mi rutina"
-            subtitulo="Entrenamiento personalizado"
+          <RoutineCard
             activo={
               accesoBeneficios
             }
             estadoMembresia={
               estadoMembresia
+            }
+            perfilInicial={
+              perfilFisico
+            }
+
+            rutinaInicial={
+              rutinaInicial
             }
           />
 
