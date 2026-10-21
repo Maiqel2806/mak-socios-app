@@ -1093,13 +1093,19 @@ export default function RoutineCard({
         >
 
           <div
-            className="mak-modal-sheet max-h-[92vh] w-full overflow-x-hidden overflow-y-auto rounded-t-[2rem] bg-white shadow-2xl dark:bg-zinc-900 sm:max-w-xl sm:rounded-[2rem]"
+            className={
+              modo === 'rutina'
+                ? 'relative h-dvh w-full overflow-x-hidden overflow-y-auto bg-white shadow-2xl dark:bg-zinc-900 sm:h-[94vh] sm:max-h-[94vh] sm:max-w-5xl sm:rounded-[2rem]'
+                : 'mak-modal-sheet max-h-[92vh] w-full overflow-x-hidden overflow-y-auto rounded-t-[2rem] bg-white shadow-2xl dark:bg-zinc-900 sm:max-w-xl sm:rounded-[2rem]'
+            }
             onClick={(evento) =>
               evento.stopPropagation()
             }
           >
 
-            <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700 sm:hidden" />
+            {modo !== 'rutina' && (
+              <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700 sm:hidden" />
+            )}
 
 
             {modo ===
