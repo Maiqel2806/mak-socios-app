@@ -17,8 +17,12 @@ import {
 } from 'lucide-react'
 
 
-import WorkoutExecutionView from './WorkoutExecutionView'
 
+import WorkoutSeriesEditor from './WorkoutSeriesEditor'
+
+import WorkoutFinishControl from './WorkoutFinishControl'
+
+import WorkoutCancelControl from './WorkoutCancelControl'
 
 function textoDias(cantidad) {
   return Number(cantidad) === 1
@@ -230,17 +234,12 @@ export default function RoutinePlanView({
   }
 
 
-  // MAK_ENTRENAMIENTO_V1
   const [
-    entrenamiento,
-    setEntrenamiento,
+    avisoRepeticion,
+    setAvisoRepeticion,
   ] = useState(null)
 
-  const [
-    vistaEntrenamiento,
-    setVistaEntrenamiento,
-  ] = useState(false)
-
+  // MAK_ENTRENAMIENTO_UI_V1
   const [
     iniciandoEntrenamiento,
     setIniciandoEntrenamiento,
@@ -252,133 +251,6 @@ export default function RoutinePlanView({
   ] = useState('')
 
 
-  async function cargarEntrenamiento() {
-    try {
-      const respuesta =
-        await fetch(
-          '/api/entrenamiento',
-          {
-            cache: 'no-store',
-          }
-        )
-
-      const data =
-        await respuesta.json()
-
-      if (
-        respuesta.ok &&
-        data
-          ?.entrenamiento
-          ?.tiene_entrenamiento
-      ) {
-        setEntrenamiento(
-          data.entrenamiento
-        )
-      } else if (
-        respuesta.ok
-      ) {
-        setEntrenamiento(
-          null
-        )
-      }
-
-    } catch {
-      // La rutina puede seguir mostrándose
-      // aunque falle esta consulta.
-    }
-  }
-
-
-  useEffect(() => {
-    cargarEntrenamiento()
-  }, [])
-
-
-  async function iniciarEntrenamiento() {
-    if (
-      entrenamiento
-        ?.tiene_entrenamiento
-    ) {
-      setVistaEntrenamiento(
-        true
-      )
-      return
-    }
-
-    setIniciandoEntrenamiento(
-      true
-    )
-    setErrorEntrenamiento('')
-
-    try {
-      const respuesta =
-        await fetch(
-          '/api/entrenamiento',
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-
-            body:
-              JSON.stringify({
-                dia:
-                  Number(
-                    dia?.dia
-                  ),
-              }),
-          }
-        )
-
-      const data =
-        await respuesta.json()
-
-      if (!respuesta.ok) {
-        throw new Error(
-          data?.error ||
-          'No fue posible iniciar el entrenamiento.'
-        )
-      }
-
-      if (
-        data?.entrenamiento
-          ?.tiene_entrenamiento
-      ) {
-        setEntrenamiento(
-          data.entrenamiento
-        )
-
-        setVistaEntrenamiento(
-          true
-        )
-      }
-
-    } catch (
-      errorInicio
-    ) {
-      setErrorEntrenamiento(
-        errorInicio?.message ||
-        'No fue posible iniciar el entrenamiento.'
-      )
-
-    } finally {
-      setIniciandoEntrenamiento(
-        false
-      )
-    }
-  }
-
-
-  function entrenamientoFinalizado() {
-    setEntrenamiento(null)
-    setVistaEntrenamiento(false)
-    setErrorEntrenamiento('')
-  }
-
-
-  // MAK_ENTRENAMIENTO_UI_V1
   const [
     entrenamientoActivo,
     setEntrenamientoActivo,
@@ -442,8 +314,52 @@ export default function RoutinePlanView({
 
 
   async function iniciarEntrenamiento(
-    diaNumero
+    diaNumero,
+    confirmarRepeticion = false
   ) {
+
+    // Preparar las sustituciones de este día.
+    // La posición coincide con el orden guardado
+    // en socio_entrenamiento_ejercicios.
+    const diaProgramado = (
+      Array.isArray(rutina?.dias) ? rutina.dias : []
+    ).find(
+      (item) => Number(item?.dia) === Number(diaNumero)
+    )
+
+    if (!diaProgramado) {
+      setErrorEntrenamiento(
+        'No se encontró el día seleccionado.'
+      )
+      return
+    }
+
+    const ejerciciosProgramados = Array.isArray(
+      diaProgramado?.ejercicios
+    ) ? diaProgramado.ejercicios : []
+
+    const variantesElegidas = ejerciciosProgramados.flatMap(
+      (programado, indice) => {
+        const clave =
+          `${diaNumero}:${programado?.ejercicio_id}`
+
+        const elegida = variantesAplicadas[clave]
+
+        if (!elegida?.ejercicio_id) {
+          return []
+        }
+
+        return [{
+          orden: indice + 1,
+          ejercicio_programado_id:
+            programado.ejercicio_id,
+          ejercicio_realizado_id:
+            elegida.ejercicio_id,
+        }]
+      }
+    )
+
+
 
     setIniciandoEntrenamiento(true)
     setErrorEntrenamiento('')
@@ -465,6 +381,9 @@ export default function RoutinePlanView({
               dia: Number(
                 diaNumero
               ),
+              confirmar_repeticion:
+                confirmarRepeticion,
+              variantes: variantesElegidas,
             }),
           }
         )
@@ -472,12 +391,25 @@ export default function RoutinePlanView({
       const data =
         await respuesta.json()
 
+      if (
+        !respuesta.ok &&
+        data?.codigo === 'ENTRENAMIENTO_YA_REALIZADO_HOY' &&
+        !confirmarRepeticion
+      ) {
+        setAvisoRepeticion({
+          dia: Number(diaNumero),
+        })
+        return
+      }
+
       if (!respuesta.ok) {
         throw new Error(
           data?.error ||
           'No fue posible iniciar el entrenamiento.'
         )
       }
+
+      setAvisoRepeticion(null)
 
       setEntrenamientoActivo(
         data?.entrenamiento || null
@@ -504,55 +436,6 @@ export default function RoutinePlanView({
   }
 
 
-  async function cancelarEntrenamiento() {
-
-    const confirmar =
-      window.confirm(
-        '¿Quieres cancelar este entrenamiento? El progreso de esta sesión no se contará como completado.'
-      )
-
-    if (!confirmar) {
-      return
-    }
-
-
-    try {
-
-      const respuesta =
-        await fetch(
-          '/api/entrenamiento',
-          {
-            method: 'DELETE',
-          }
-        )
-
-      const data =
-        await respuesta.json()
-
-      if (!respuesta.ok) {
-        throw new Error(
-          data?.error ||
-          'No fue posible cancelar el entrenamiento.'
-        )
-      }
-
-      setEntrenamientoActivo(
-        null
-      )
-
-      setModoEntrenamiento(
-        false
-      )
-
-    } catch (errorCancelar) {
-
-      setErrorEntrenamiento(
-        errorCancelar?.message ||
-        'No fue posible cancelar el entrenamiento.'
-      )
-
-    }
-  }
 
 
   useEffect(() => {
@@ -678,11 +561,6 @@ export default function RoutinePlanView({
 
 
   if (
-    vistaEntrenamiento &&
-    entrenamiento
-      ?.tiene_entrenamiento
-  ) {
-    if (
     modoEntrenamiento &&
     entrenamientoActivo
       ?.tiene_entrenamiento
@@ -764,7 +642,7 @@ export default function RoutinePlanView({
                 </p>
 
                 <p className="mt-1 text-xs text-zinc-500">
-                  {ejerciciosEntrenamiento.length} ejercicios programados
+                  {ejerciciosEntrenamiento.filter((item) => item.completado === true).length} de {ejerciciosEntrenamiento.length} ejercicios completados
                 </p>
 
               </div>
@@ -807,6 +685,18 @@ export default function RoutinePlanView({
                       <p className="text-base font-black text-zinc-950 dark:text-white">
                         {ejercicio?.nombre_realizado}
                       </p>
+
+                      {ejercicio?.es_variante && (
+                        <div className="mt-2 space-y-1">
+                          <span className="inline-flex rounded-full bg-cyan-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
+                            Variante elegida
+                          </span>
+
+                          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                            Sustituye a: {ejercicio?.nombre_programado}
+                          </p>
+                        </div>
+                      )}
 
                       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                         {ejercicio?.grupo_muscular || ''}
@@ -874,6 +764,13 @@ export default function RoutinePlanView({
 
                   )}
 
+                  <WorkoutSeriesEditor
+                    ejercicio={ejercicio}
+                    abiertoInicial={indice === 0}
+                    onGuardado={cargarEntrenamiento}
+                  />
+
+
                 </div>
 
               )
@@ -891,17 +788,25 @@ export default function RoutinePlanView({
           )}
 
 
+
+          <WorkoutFinishControl
+            entrenamiento={entrenamientoActivo}
+            onFinalizado={() => {
+              setEntrenamientoActivo(null)
+              setModoEntrenamiento(false)
+              setErrorEntrenamiento('')
+            }}
+          />
+
           <div className="mt-6 border-t border-zinc-200 pt-5 dark:border-white/10">
 
-            <button
-              type="button"
-              onClick={
-                cancelarEntrenamiento
-              }
-              className="w-full rounded-2xl border border-red-200 px-4 py-3.5 text-sm font-black text-red-600 dark:border-red-500/20 dark:text-red-400"
-            >
-              Cancelar entrenamiento
-            </button>
+            <WorkoutCancelControl
+              onCancelado={() => {
+                setEntrenamientoActivo(null)
+                setModoEntrenamiento(false)
+                setErrorEntrenamiento('')
+              }}
+            />
 
           </div>
 
@@ -915,25 +820,107 @@ export default function RoutinePlanView({
 
 
   return (
-      <WorkoutExecutionView
-        entrenamiento={
-          entrenamiento
-        }
-        onSalir={() =>
-          setVistaEntrenamiento(
-            false
-          )
-        }
-        onFinalizado={
-          entrenamientoFinalizado
-        }
-      />
-    )
-  }
-
-
-  return (
     <div className="mak-view-enter mx-auto w-full max-w-4xl p-4 pb-8 sm:p-6 lg:p-8">
+
+      {avisoRepeticion &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[210] flex items-center justify-center bg-black/65 p-4 backdrop-blur-[4px]"
+            onClick={() => {
+              if (!iniciandoEntrenamiento) {
+                setAvisoRepeticion(null)
+              }
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="titulo-repeticion-mak"
+              className="mak-modal-sheet w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl dark:bg-zinc-950 sm:p-7"
+              onClick={(evento) =>
+                evento.stopPropagation()
+              }
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+                  <ShieldAlert size={27} />
+                </div>
+
+                <button
+                  type="button"
+                  disabled={iniciandoEntrenamiento}
+                  onClick={() =>
+                    setAvisoRepeticion(null)
+                  }
+                  aria-label="Cerrar aviso"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 disabled:opacity-40 dark:bg-white/10 dark:text-zinc-300"
+                >
+                  <X size={19} />
+                </button>
+              </div>
+
+              <p className="mt-5 text-xs font-black uppercase tracking-[0.16em] text-cyan-600 dark:text-cyan-400">
+                MAK FITNESS · MI RUTINA
+              </p>
+
+              <h2
+                id="titulo-repeticion-mak"
+                className="mt-2 text-2xl font-black tracking-tight text-zinc-950 dark:text-white"
+              >
+                Ya entrenaste este día
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                Ya completaste el Día {avisoRepeticion.dia}
+                de esta rutina hoy.
+              </p>
+
+              <div className="mt-4 rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
+                <p className="text-sm font-semibold leading-6 text-amber-900 dark:text-amber-200">
+                  Si decides repetirlo, guardaremos
+                  una sesión adicional. No sumará
+                  dos veces al cumplimiento de tu plan,
+                  pero sí formará parte de tu historial
+                  y del trabajo realizado.
+                </p>
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  disabled={iniciandoEntrenamiento}
+                  onClick={() =>
+                    setAvisoRepeticion(null)
+                  }
+                  className="mak-interactive min-h-12 rounded-2xl border border-zinc-200 px-3 py-3 text-sm font-bold text-zinc-700 disabled:opacity-50 dark:border-white/10 dark:text-zinc-200"
+                >
+                  Volver
+                </button>
+
+                <button
+                  type="button"
+                  disabled={iniciandoEntrenamiento}
+                  onClick={() =>
+                    iniciarEntrenamiento(
+                      avisoRepeticion.dia,
+                      true
+                    )
+                  }
+                  className="mak-interactive min-h-12 rounded-2xl bg-[#02AFBB] px-3 py-3 text-sm font-bold text-white disabled:opacity-50"
+                >
+                  {iniciandoEntrenamiento
+                    ? 'Iniciando...'
+                    : 'Entrenar de nuevo'}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      }
+
+
 
       <div className="flex items-start justify-between gap-3">
 
@@ -1173,54 +1160,6 @@ export default function RoutinePlanView({
               </p>
 
             </div>
-
-          </div>
-
-
-          <div className="mt-4">
-
-            <button
-              type="button"
-              onClick={
-                iniciarEntrenamiento
-              }
-              disabled={
-                iniciandoEntrenamiento
-              }
-              className="mak-interactive flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-950 px-5 py-4 text-sm font-black text-white disabled:opacity-50 dark:bg-white dark:text-zinc-950"
-            >
-              {entrenamiento
-                ?.tiene_entrenamiento
-                ? `Reanudar entrenamiento · Día ${entrenamiento.dia}`
-                : iniciandoEntrenamiento
-                  ? 'Iniciando...'
-                  : '▶ Iniciar entrenamiento'}
-            </button>
-
-
-            {entrenamiento
-              ?.tiene_entrenamiento &&
-              Number(
-                entrenamiento?.dia
-              ) !==
-              Number(
-                dia?.dia
-              ) && (
-
-              <p className="mt-2 text-center text-xs font-semibold text-amber-600 dark:text-amber-400">
-                Tienes una sesión del Día {entrenamiento.dia} todavía en curso.
-              </p>
-
-            )}
-
-
-            {errorEntrenamiento && (
-
-              <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700 dark:bg-red-500/10 dark:text-red-300">
-                {errorEntrenamiento}
-              </p>
-
-            )}
 
           </div>
 

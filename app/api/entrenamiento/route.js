@@ -60,6 +60,31 @@ function traducirErrorRpc(error) {
     )
 
   if (
+    mensaje.includes('VARIANTE_') ||
+    mensaje.includes('VARIANTES_')
+  ) {
+    return responderError(
+      'La variante seleccionada ya no está disponible o no corresponde a este ejercicio. Vuelve a elegir una alternativa.',
+      409
+    )
+  }
+
+  if (
+    mensaje.includes(
+      'ENTRENAMIENTO_YA_REALIZADO_HOY'
+    )
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        codigo: 'ENTRENAMIENTO_YA_REALIZADO_HOY',
+        error: 'Este entrenamiento ya fue completado hoy.',
+      },
+      { status: 409 }
+    )
+  }
+
+  if (
     mensaje.includes(
       'MEMBRESIA_ACTIVA_REQUERIDA'
     )
@@ -107,6 +132,24 @@ function traducirErrorRpc(error) {
 }
 
 
+async function obtenerEntrenamientoActual(
+  supabase
+) {
+  const {
+    data,
+    error,
+  } =
+    await supabase.rpc(
+      'obtener_mi_entrenamiento_en_curso_app'
+    )
+
+  return {
+    data,
+    error,
+  }
+}
+
+
 export async function GET() {
   try {
     const {
@@ -123,8 +166,8 @@ export async function GET() {
       data,
       error,
     } =
-      await supabase.rpc(
-        'obtener_mi_entrenamiento_en_curso_app'
+      await obtenerEntrenamientoActual(
+        supabase
       )
 
     if (error) {
@@ -135,9 +178,11 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
+
       entrenamiento:
         data || {
-          tiene_entrenamiento: false,
+          tiene_entrenamiento:
+            false,
         },
     })
 
@@ -169,49 +214,195 @@ export async function POST(
       return authError
     }
 
-    const body =
-      await request.json()
+
+    // ========================================================
+    // 1. PRIMERO REVISAR SI YA HAY ENTRENAMIENTO EN CURSO
+    //
+    // Esto permite "Reanudar" sin depender de que el frontend
+    // vuelva a enviar correctamente el número de día.
+    // ========================================================
+
+    const {
+      data: entrenamientoActual,
+      error: errorActual,
+    } =
+      await obtenerEntrenamientoActual(
+        supabase
+      )
+
+    if (errorActual) {
+      return traducirErrorRpc(
+        errorActual
+      )
+    }
+
+
+    if (
+      entrenamientoActual
+        ?.tiene_entrenamiento
+    ) {
+      return NextResponse.json({
+        ok: true,
+
+        reanudada:
+          true,
+
+        inicio: {
+          ok: true,
+
+          reanudada:
+            true,
+
+          entrenamiento_id:
+            entrenamientoActual
+              .entrenamiento_id,
+
+          dia:
+            entrenamientoActual.dia,
+
+          nombre_dia:
+            entrenamientoActual
+              .nombre_dia,
+
+          fecha_inicio:
+            entrenamientoActual
+              .fecha_inicio,
+        },
+
+        entrenamiento:
+          entrenamientoActual,
+      })
+    }
+
+
+    // ========================================================
+    // 2. NO HAY SESIÓN ACTIVA:
+    //    LEER EL DÍA SOLICITADO
+    //
+    // Aceptamos distintas claves para que la API sea robusta.
+    // ========================================================
+
+    let body = {}
+
+    try {
+      body =
+        await request.json()
+    } catch {
+      body = {}
+    }
+
+
+    const diaCrudo =
+      body?.dia ??
+      body?.diaNumero ??
+      body?.dia_numero ??
+      null
+
 
     const dia =
       Number(
-        body?.dia
+        diaCrudo
       )
+
 
     if (
       !Number.isInteger(dia) ||
       dia < 1 ||
       dia > 7
     ) {
+      console.error(
+        'DÍA RECIBIDO INVÁLIDO:',
+        body
+      )
+
       return responderError(
         'El día seleccionado no es válido.',
         400
       )
     }
 
+
+    // ========================================================
+    // 3. INICIAR SESIÓN
+    // ========================================================
+
+
+    // Solo aceptamos identificadores y posiciones.
+    // Nunca nombres ni prescripciones desde el cliente.
+    const variantes = body?.variantes ?? []
+
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+    if (
+      !Array.isArray(variantes) ||
+      variantes.length > 30
+    ) {
+      return responderError(
+        'Las variantes enviadas no son válidas.',
+        400
+      )
+    }
+
+    const posiciones = new Set()
+
+    for (const variante of variantes) {
+      const orden = variante?.orden
+
+      if (
+        !Number.isSafeInteger(orden) ||
+        orden < 1 ||
+        orden > 30 ||
+        posiciones.has(orden) ||
+        !uuid.test(
+          String(variante?.ejercicio_programado_id || '')
+        ) ||
+        !uuid.test(
+          String(variante?.ejercicio_realizado_id || '')
+        )
+      ) {
+        return responderError(
+          'La selección de variantes no es válida.',
+          400
+        )
+      }
+
+      posiciones.add(orden)
+    }
+
     const {
-      data,
-      error,
+      data: inicio,
+      error: errorInicio,
     } =
       await supabase.rpc(
-        'iniciar_mi_entrenamiento_app',
+        'iniciar_mi_entrenamiento_con_variantes_app',
         {
           p_dia: dia,
+          p_confirmar_repeticion:
+            body?.confirmar_repeticion === true,
+          p_variantes: variantes,
         }
       )
 
-    if (error) {
+
+    if (errorInicio) {
       return traducirErrorRpc(
-        error
+        errorInicio
       )
     }
+
+
+    // ========================================================
+    // 4. RECUPERAR SESIÓN COMPLETA
+    // ========================================================
 
     const {
       data: entrenamiento,
       error: errorEntrenamiento,
     } =
-      await supabase.rpc(
-        'obtener_mi_entrenamiento_en_curso_app'
+      await obtenerEntrenamientoActual(
+        supabase
       )
+
 
     if (errorEntrenamiento) {
       return traducirErrorRpc(
@@ -219,9 +410,17 @@ export async function POST(
       )
     }
 
+
     return NextResponse.json({
       ok: true,
-      inicio: data,
+
+      reanudada:
+        Boolean(
+          inicio?.reanudada
+        ),
+
+      inicio,
+
       entrenamiento,
     })
 
@@ -239,313 +438,8 @@ export async function POST(
 }
 
 
-export async function PATCH(
-  request
-) {
-  try {
-    const {
-      supabase,
-      error: authError,
-    } =
-      await obtenerSupabaseAutenticado()
-
-    if (authError) {
-      return authError
-    }
-
-    const body =
-      await request.json()
-
-    const accion =
-      String(
-        body?.accion || ''
-      )
-
-    if (accion === 'serie') {
-      const ejercicioId =
-        String(
-          body?.entrenamiento_ejercicio_id || ''
-        )
-
-      const numeroSerie =
-        Number(
-          body?.numero_serie
-        )
-
-      if (
-        !ejercicioId ||
-        !Number.isInteger(numeroSerie) ||
-        numeroSerie < 1
-      ) {
-        return responderError(
-          'Datos de serie no válidos.',
-          400
-        )
-      }
-
-      const peso =
-        body?.peso_kg === '' ||
-        body?.peso_kg === null ||
-        body?.peso_kg === undefined
-          ? null
-          : Number(body.peso_kg)
-
-      const repeticiones =
-        body?.repeticiones === '' ||
-        body?.repeticiones === null ||
-        body?.repeticiones === undefined
-          ? null
-          : Number(body.repeticiones)
-
-      const duracion =
-        body?.duracion_seg === '' ||
-        body?.duracion_seg === null ||
-        body?.duracion_seg === undefined
-          ? null
-          : Number(body.duracion_seg)
-
-      const rir =
-        body?.rir === '' ||
-        body?.rir === null ||
-        body?.rir === undefined
-          ? null
-          : Number(body.rir)
-
-      const {
-        error,
-      } =
-        await supabase
-          .from(
-            'socio_entrenamiento_series'
-          )
-          .upsert(
-            {
-              entrenamiento_ejercicio_id:
-                ejercicioId,
-
-              numero_serie:
-                numeroSerie,
-
-              peso_kg:
-                Number.isFinite(peso)
-                  ? peso
-                  : null,
-
-              repeticiones:
-                Number.isFinite(repeticiones)
-                  ? repeticiones
-                  : null,
-
-              duracion_seg:
-                Number.isFinite(duracion)
-                  ? Math.round(duracion)
-                  : null,
-
-              rir:
-                Number.isFinite(rir)
-                  ? Math.round(rir)
-                  : null,
-
-              completada:
-                true,
-
-              updated_at:
-                new Date().toISOString(),
-            },
-            {
-              onConflict:
-                'entrenamiento_ejercicio_id,numero_serie',
-            }
-          )
-
-      if (error) {
-        console.error(
-          'GUARDAR SERIE:',
-          error
-        )
-
-        return responderError(
-          'No fue posible guardar la serie.',
-          500
-        )
-      }
-    }
-
-    else if (
-      accion === 'completar_ejercicio'
-    ) {
-      const ejercicioId =
-        String(
-          body?.entrenamiento_ejercicio_id || ''
-        )
-
-      if (!ejercicioId) {
-        return responderError(
-          'Ejercicio no válido.',
-          400
-        )
-      }
-
-      const {
-        error,
-      } =
-        await supabase
-          .from(
-            'socio_entrenamiento_ejercicios'
-          )
-          .update({
-            completado: true,
-            updated_at:
-              new Date().toISOString(),
-          })
-          .eq(
-            'id',
-            ejercicioId
-          )
-
-      if (error) {
-        console.error(
-          'COMPLETAR EJERCICIO:',
-          error
-        )
-
-        return responderError(
-          'No fue posible completar el ejercicio.',
-          500
-        )
-      }
-    }
-
-    else if (
-      accion === 'finalizar'
-    ) {
-      const entrenamientoId =
-        String(
-          body?.entrenamiento_id || ''
-        )
-
-      const duracionSeg =
-        Math.max(
-          0,
-          Math.round(
-            Number(
-              body?.duracion_seg || 0
-            )
-          )
-        )
-
-      const rpe =
-        Number(
-          body?.rpe
-        )
-
-      if (
-        !entrenamientoId ||
-        !Number.isInteger(rpe) ||
-        rpe < 1 ||
-        rpe > 10
-      ) {
-        return responderError(
-          'Datos de finalización no válidos.',
-          400
-        )
-      }
-
-      const {
-        error,
-      } =
-        await supabase
-          .from(
-            'socio_entrenamientos'
-          )
-          .update({
-            estado:
-              'completado',
-
-            fecha_fin:
-              new Date().toISOString(),
-
-            duracion_seg:
-              duracionSeg,
-
-            esfuerzo_sesion_rpe:
-              rpe,
-
-            updated_at:
-              new Date().toISOString(),
-          })
-          .eq(
-            'id',
-            entrenamientoId
-          )
-          .eq(
-            'estado',
-            'en_curso'
-          )
-
-      if (error) {
-        console.error(
-          'FINALIZAR ENTRENAMIENTO:',
-          error
-        )
-
-        return responderError(
-          'No fue posible finalizar el entrenamiento.',
-          500
-        )
-      }
-
-      return NextResponse.json({
-        ok: true,
-        finalizado: true,
-      })
-    }
-
-    else {
-      return responderError(
-        'Acción no válida.',
-        400
-      )
-    }
-
-
-    const {
-      data: entrenamiento,
-      error: errorEntrenamiento,
-    } =
-      await supabase.rpc(
-        'obtener_mi_entrenamiento_en_curso_app'
-      )
-
-    if (errorEntrenamiento) {
-      return traducirErrorRpc(
-        errorEntrenamiento
-      )
-    }
-
-    return NextResponse.json({
-      ok: true,
-      entrenamiento,
-    })
-
-  } catch (error) {
-    console.error(
-      'PATCH ENTRENAMIENTO:',
-      error
-    )
-
-    return responderError(
-      'No fue posible actualizar el entrenamiento.',
-      500
-    )
-  }
-}
-
-
-
 export async function DELETE() {
   try {
-
     const {
       supabase,
       error: authError,
@@ -567,8 +461,30 @@ export async function DELETE() {
 
 
     if (error) {
-      return traducirErrorRpc(
+      const mensaje =
+        String(
+          error?.message || ''
+        )
+
+      if (
+        mensaje.includes(
+          'SESION_SOCIO_INVALIDA'
+        )
+      ) {
+        return responderError(
+          'Sesión no válida.',
+          401
+        )
+      }
+
+      console.error(
+        'CANCELAR ENTRENAMIENTO RPC:',
         error
+      )
+
+      return responderError(
+        'No fue posible cancelar el entrenamiento.',
+        500
       )
     }
 
@@ -579,7 +495,6 @@ export async function DELETE() {
     })
 
   } catch (error) {
-
     console.error(
       'DELETE ENTRENAMIENTO:',
       error
@@ -587,6 +502,231 @@ export async function DELETE() {
 
     return responderError(
       'No fue posible cancelar el entrenamiento.',
+      500
+    )
+  }
+}
+
+
+// MAK SOCIOS - Guardar o actualizar una serie
+export async function PATCH(request) {
+  try {
+    const { supabase, error: authError } =
+      await obtenerSupabaseAutenticado()
+
+    if (authError) return authError
+
+    let body
+
+    try {
+      body = await request.json()
+    } catch {
+      return responderError('Datos inválidos.', 400)
+    }
+
+    const id = body?.ejercicio_id
+    const serie = body?.numero_serie
+
+    const uuidValido =
+      typeof id === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+
+    if (
+      !uuidValido ||
+      !Number.isSafeInteger(serie) ||
+      serie < 1 ||
+      typeof body.completada !== 'boolean'
+    ) {
+      return responderError(
+        'Ejercicio o número de serie inválido.',
+        400
+      )
+    }
+
+    const convertir = (valor, entero = false) => {
+      if (
+        valor === null ||
+        valor === undefined ||
+        valor === ''
+      ) return null
+
+      if (
+        typeof valor !== 'number' &&
+        typeof valor !== 'string'
+      ) return NaN
+
+      const texto = String(valor).trim().replace(',', '.')
+      if (!texto) return null
+
+      const numero = Number(texto)
+
+      if (
+        !Number.isFinite(numero) ||
+        numero < 0 ||
+        (entero && !Number.isSafeInteger(numero))
+      ) return NaN
+
+      return numero
+    }
+
+    const peso = convertir(body.peso_kg)
+    const reps = convertir(body.repeticiones, true)
+    const actividad =
+      body.actividad_sin_repeticiones === true
+
+    if (
+      Number.isNaN(peso) ||
+      Number.isNaN(reps) ||
+      (body.duracion_seg !== undefined &&
+       body.duracion_seg !== null) ||
+      (peso !== null &&
+        Math.abs(peso / 2.5 - Math.round(peso / 2.5)) >
+          0.0000001)
+    ) {
+      return responderError(
+        'El peso debe avanzar en incrementos de 2,5 kg. No se registran tiempos por ejercicio.',
+        400
+      )
+    }
+
+    if (actividad && (peso !== null || reps !== null)) {
+      return responderError(
+        'Esta actividad solo permite marcar su realización.',
+        400
+      )
+    }
+
+    if (
+      body.completada &&
+      !actividad &&
+      (peso === null || !(reps > 0))
+    ) {
+      return responderError(
+        'Registra peso y repeticiones para completar esta serie.',
+        400
+      )
+    }
+
+    const { data, error } = await supabase.rpc(
+      'guardar_mi_serie_entrenamiento_app',
+      {
+        p_entrenamiento_ejercicio_id: id,
+        p_numero_serie: serie,
+        p_peso_kg: peso,
+        p_repeticiones: reps,
+        p_duracion_seg: null,
+        p_rir: null,
+        p_completada: body.completada,
+      }
+    )
+
+    if (error) {
+      const mensaje = String(error.message || '')
+
+      if (mensaje.includes('SOCIO_NO_VALIDO'))
+        return responderError('Sesión no válida.', 401)
+
+      if (mensaje.includes('MEMBRESIA_ACTIVA_REQUERIDA'))
+        return responderError('Necesitas una membresía activa.', 403)
+
+      if (mensaje.includes('EJERCICIO_NO_DISPONIBLE'))
+        return responderError('Ejercicio no disponible.', 409)
+
+      if (mensaje.includes('PESO_NO_DISPONIBLE'))
+        return responderError(
+          'Introduce un peso válido en incrementos de 2,5 kg.',
+          400
+        )
+
+      if (
+        mensaje.includes('NUMERO_SERIE_INVALIDO') ||
+        mensaje.includes('SERIES_OBJETIVO_INVALIDAS') ||
+        mensaje.includes('DATOS_SERIE_INCOMPLETOS') ||
+        mensaje.includes('DATOS_ACTIVIDAD_INVALIDOS') ||
+        mensaje.includes('VALORES_SERIE_INVALIDOS')
+      ) {
+        return responderError(
+          'Revisa los datos registrados.',
+          400
+        )
+      }
+
+      console.error('PATCH ENTRENAMIENTO:', error)
+      return responderError('No fue posible guardar la serie.', 500)
+    }
+
+    return NextResponse.json({
+      ok: true,
+      serie: data.serie,
+      ejercicio_completado: data.ejercicio_completado,
+      series_completadas: data.series_completadas,
+      series_objetivo: data.series_objetivo,
+    })
+
+  } catch (error) {
+    console.error('PATCH ENTRENAMIENTO:', error)
+    return responderError('No fue posible guardar la serie.', 500)
+  }
+}
+
+
+export async function PUT() {
+  try {
+    const { supabase, error: authError } =
+      await obtenerSupabaseAutenticado()
+
+    if (authError) return authError
+
+    const { data, error } = await supabase.rpc(
+      'finalizar_mi_entrenamiento_app'
+    )
+
+    if (error) {
+      const mensaje = String(error.message || '')
+
+      if (mensaje.includes('SOCIO_NO_VALIDO'))
+        return responderError('Sesión no válida.', 401)
+
+      if (mensaje.includes('MEMBRESIA_ACTIVA_REQUERIDA'))
+        return responderError('Necesitas una membresía activa.', 403)
+
+      if (mensaje.includes('ENTRENAMIENTO_INCOMPLETO'))
+        return responderError(
+          'Aún faltan series por completar o corregir.',
+          409
+        )
+
+      if (mensaje.includes('ENTRENAMIENTO_NO_DISPONIBLE'))
+        return responderError(
+          'No existe un entrenamiento activo para finalizar.',
+          409
+        )
+
+      console.error('FINALIZAR ENTRENAMIENTO:', error)
+
+      return responderError(
+        'No fue posible finalizar el entrenamiento.',
+        500
+      )
+    }
+
+    if (!data?.ok) {
+      return responderError(
+        'No se pudo confirmar la finalización.',
+        500
+      )
+    }
+
+    return NextResponse.json({
+      ok: true,
+      resultado: data,
+    })
+
+  } catch (error) {
+    console.error('PUT ENTRENAMIENTO:', error)
+
+    return responderError(
+      'No fue posible finalizar el entrenamiento.',
       500
     )
   }

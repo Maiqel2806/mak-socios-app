@@ -18,6 +18,7 @@ import {
 import ThemeToggle from '@/components/ThemeToggle'
 import MembershipCard from '@/components/MembershipCard'
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
+import ProgressEntryCard from '@/components/ProgressEntryCard'
 import RoutineCard from '@/components/RoutineCard'
 
 
@@ -356,16 +357,9 @@ export default async function InicioPage() {
           />
 
 
-          <ExclusiveBenefitCard
-            tipo="progreso"
-            titulo="Progreso"
-            subtitulo="Mis resultados"
-            activo={
-              accesoBeneficios
-            }
-            estadoMembresia={
-              estadoMembresia
-            }
+          <ProgressEntryCard
+            activo={accesoBeneficios}
+            estadoMembresia={estadoMembresia}
           />
 
 

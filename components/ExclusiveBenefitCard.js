@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Dumbbell,
   LockKeyhole,
+  Coffee,
   Salad,
   Sparkles,
   TrendingUp,
@@ -179,6 +180,41 @@ export default function ExclusiveBenefitCard({
 
     return (
       'Necesitas una membresía activa para acceder.'
+    )
+  }
+
+
+
+
+  // MAK FITNESS - Funcionalidad en preparación.
+  // Tarjeta informativa, sin navegación ni eventos.
+  if (tipo === 'snack') {
+    return (
+      <div
+        aria-label="Próximamente"
+        className="relative isolate flex min-h-[145px] w-full items-center justify-center overflow-hidden rounded-3xl border border-zinc-300 bg-gradient-to-br from-zinc-200 via-zinc-300 to-zinc-400 shadow-sm dark:border-zinc-700 dark:from-zinc-800 dark:via-zinc-800 dark:to-zinc-900"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-white/10 backdrop-blur-[1px] dark:bg-black/10"
+        />
+
+        <Coffee
+          aria-hidden="true"
+          size={126}
+          strokeWidth={1.35}
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 -rotate-12 text-zinc-500/25 blur-[1px] dark:text-zinc-200/20"
+        />
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-white/30 blur-3xl dark:bg-white/5"
+        />
+
+        <p className="relative z-10 px-3 text-center text-lg font-black uppercase tracking-[0.12em] text-zinc-700/85 dark:text-zinc-200/85 sm:text-xl">
+          PRÓXIMAMENTE
+        </p>
+      </div>
     )
   }
 
