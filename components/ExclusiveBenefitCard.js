@@ -211,7 +211,7 @@ export default function ExclusiveBenefitCard({
           className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-white/30 blur-3xl dark:bg-white/5"
         />
 
-        <p className="relative z-10 px-3 text-center text-lg font-black uppercase tracking-[0.12em] text-zinc-700/85 dark:text-zinc-200/85 sm:text-xl">
+        <p className="relative z-10 max-w-full px-2 text-center text-[clamp(0.75rem,3.4vw,1.125rem)] font-black uppercase tracking-[0.04em] text-zinc-700/85 dark:text-zinc-200/85 sm:tracking-[0.08em]">
           PRÓXIMAMENTE
         </p>
       </div>

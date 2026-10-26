@@ -20,6 +20,7 @@ import MembershipCard from '@/components/MembershipCard'
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import ProgressEntryCard from '@/components/ProgressEntryCard'
 import RoutineCard from '@/components/RoutineCard'
+import MemberAccessCodeCard from '@/components/MemberAccessCodeCard'
 
 
 export default async function InicioPage() {
@@ -187,28 +188,28 @@ export default async function InicioPage() {
   return (
     <main className="min-h-screen bg-zinc-100 pb-24 text-zinc-950 transition-colors duration-300 dark:bg-zinc-950 dark:text-white">
 
-      <header className="border-b border-zinc-200 bg-white px-4 pb-7 pt-5 transition-colors dark:border-white/10 dark:bg-zinc-950">
+      <header className="border-b border-zinc-200 bg-white px-4 py-4 transition-colors dark:border-white/10 dark:bg-zinc-950">
 
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
 
-          <div>
+          <div className="min-w-0 flex-1">
 
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-600 dark:text-cyan-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.23em] text-cyan-600 dark:text-cyan-400">
               MAK FITNESS
             </p>
 
-            <h1 className="mt-1 text-2xl font-black text-zinc-950 dark:text-white md:text-3xl">
+            <h1 className="mt-1 break-words text-[clamp(1.35rem,5.5vw,1.875rem)] font-black leading-tight text-zinc-950 dark:text-white">
               ¡Hola, {nombreSocio}!
             </h1>
 
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              Qué bueno tenerte nuevamente por aquí.
+              Vamos por un gran entrenamiento.
             </p>
 
           </div>
 
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
 
             <ThemeToggle
               compacto
@@ -237,12 +238,14 @@ export default async function InicioPage() {
       </header>
 
 
-      <div className="mx-auto w-full max-w-5xl px-4 pt-5">
+      <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+
+        <MemberAccessCodeCard codigo={codigoSocio} />
 
         {!cuenta.clave_cambiada &&
           !cuenta.cambio_clave_obligatorio && (
 
-          <section className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
+          <section className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
 
             <div className="flex gap-3">
 
@@ -261,7 +264,7 @@ export default async function InicioPage() {
                   Estás utilizando tu contraseña inicial. Recomendamos crear una contraseña personal.
                 </p>
 
-                <p className="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
                   El cambio es opcional para tu cuenta.
                 </p>
 
@@ -302,7 +305,7 @@ export default async function InicioPage() {
         )}
 
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-3 grid grid-cols-2 gap-3">
 
         {errorMembresia ? (
 

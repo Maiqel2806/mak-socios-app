@@ -23,7 +23,7 @@ export default function ProgressEntryCard({
   return (
     <Link
       href="/progreso"
-      className="mak-interactive group flex min-h-[145px] flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition hover:border-cyan-400/50 dark:border-white/10 dark:bg-zinc-900"
+      className="mak-interactive group flex min-h-[136px] flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:border-cyan-400/50 dark:border-white/10 dark:bg-zinc-900"
     >
       <div className="flex items-start justify-between">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400">

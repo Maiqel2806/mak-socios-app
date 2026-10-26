@@ -474,7 +474,7 @@ export default function MembershipCard({
         onClick={
           abrir
         }
-        className="mak-interactive group flex min-h-[145px] w-full flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-zinc-900"
+        className="mak-interactive group flex min-h-[136px] w-full flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-zinc-900"
       >
 
         <div className="flex items-start justify-between gap-3">
@@ -576,7 +576,7 @@ export default function MembershipCard({
             />
 
 
-            <div className="mak-view-enter p-5 pb-8 sm:p-6">
+            <div className="mak-view-enter p-4 pb-7 sm:p-6">
 
               {!membresia
                 ?.tiene_membresia ? (
@@ -596,7 +596,7 @@ export default function MembershipCard({
                         Plan actual
                       </p>
 
-                      <h3 className="mt-2 text-2xl font-black text-zinc-950 dark:text-white">
+                      <h3 className="mt-2 max-w-[21ch] break-words text-[clamp(1.2rem,5vw,1.5rem)] font-black leading-snug text-zinc-950 dark:text-white">
                         {membresia.plan_nombre}
                       </h3>
 
@@ -679,7 +679,7 @@ export default function MembershipCard({
                       className={
                         vigenciaUrgente
                           ? 'mt-5 rounded-3xl bg-orange-500 p-5 text-white'
-                          : 'mt-5 rounded-3xl bg-zinc-950 p-5 text-white dark:bg-black'
+                          : 'mt-4 rounded-2xl bg-zinc-950 p-4 text-white dark:bg-black'
                       }
                     >
 

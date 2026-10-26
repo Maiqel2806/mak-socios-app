@@ -1025,7 +1025,7 @@ export default function RoutineCard({
       <button
         type="button"
         onClick={abrir}
-        className="mak-interactive group flex min-h-[145px] w-full flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-5 text-left shadow-sm dark:border-white/10 dark:bg-zinc-900"
+        className="mak-interactive group flex min-h-[136px] w-full flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm dark:border-white/10 dark:bg-zinc-900"
       >
 
         <div className="flex items-start justify-between gap-3">
