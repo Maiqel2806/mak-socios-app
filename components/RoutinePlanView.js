@@ -1098,7 +1098,7 @@ export default function RoutinePlanView({
       )}
 
 
-      <div className="sticky top-0 z-20 -mx-4 mt-5 flex gap-2 overflow-x-auto border-y border-zinc-100 bg-white/95 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div aria-label="Días de tu rutina" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto overscroll-x-contain border-y border-zinc-100 bg-white/95 px-4 py-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
 
         {dias.map(
           (item) => (
@@ -1106,6 +1106,7 @@ export default function RoutinePlanView({
             <button
               key={item?.dia}
               type="button"
+              aria-pressed={Number(item?.dia) === Number(diaActivo)}
               onClick={() =>
                 setDiaActivo(
                   Number(item?.dia)
@@ -1114,8 +1115,8 @@ export default function RoutinePlanView({
               className={
                 Number(item?.dia) ===
                 Number(diaActivo)
-                  ? 'shrink-0 rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-white'
-                  : 'shrink-0 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-black text-zinc-600 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-300'
+                  ? 'shrink-0 rounded-xl bg-[#02AFBB] px-4 py-2.5 text-sm font-black text-white'
+                  : 'shrink-0 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-bold text-zinc-600 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-300'
               }
             >
               Día {item?.dia}
@@ -1266,7 +1267,7 @@ export default function RoutinePlanView({
                         ?.ejercicio_id ||
                       `${dia?.dia}-${indice}`
                     }
-                    className="rounded-2xl border border-zinc-200 p-4 dark:border-white/10"
+                    className="rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm dark:border-white/10 dark:bg-white/[0.02] sm:p-4"
                   >
 
                     <div className="flex items-start gap-3">
@@ -1371,39 +1372,23 @@ export default function RoutinePlanView({
                     )}
 
 
-                    {ejercicioVisible
-                      ?.tecnica && (
-
-                      <div className="mt-3">
-
-                        <p className="text-xs font-black text-zinc-500 dark:text-zinc-400">
-                          Técnica
-                        </p>
-
-                        <p className="mt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                          {ejercicioVisible.tecnica}
-                        </p>
-
-                      </div>
-
-                    )}
-
-
-                    {ejercicioVisible
-                      ?.recomendacion && (
-
-                      <div className="mt-3">
-
-                        <p className="text-xs font-black text-zinc-500 dark:text-zinc-400">
-                          Recomendación
-                        </p>
-
-                        <p className="mt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                          {ejercicioVisible.recomendacion}
-                        </p>
-
-                      </div>
-
+                    {(ejercicioVisible?.tecnica || ejercicioVisible?.recomendacion) && (
+                      <details className="group mt-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
+                        <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-xs font-bold text-zinc-700 marker:hidden dark:text-zinc-200 [&::-webkit-details-marker]:hidden">
+                          Técnica y consejos
+                          <span aria-hidden="true" className="text-cyan-600 transition group-open:rotate-180">⌄</span>
+                        </summary>
+                        {ejercicioVisible?.tecnica && (
+                          <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                            <span className="font-bold">Técnica: </span>{ejercicioVisible.tecnica}
+                          </p>
+                        )}
+                        {ejercicioVisible?.recomendacion && (
+                          <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                            <span className="font-bold">Consejo: </span>{ejercicioVisible.recomendacion}
+                          </p>
+                        )}
+                      </details>
                     )}
 
 

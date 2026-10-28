@@ -224,15 +224,14 @@ export default function ProgressSummaryDashboard({
 
               <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                 {calorias == null
-                  ? 'Sin estimación: revisa el peso de tu perfil y registra sesiones con duración válida.'
+                  ? 'Sin datos suficientes para estimar esta semana.'
                   : estimadas < sesiones
                     ? `Estimación parcial para ${estimadas} de ${sesiones} sesiones finalizadas.`
                     : `Estimación basada en ${estimadas} sesiones finalizadas.`}
               </p>
 
               <p className="mt-2 text-[11px] leading-5 text-zinc-400">
-                Cálculo orientativo con peso, duración y 3,5 MET.
-                No mide calorías reales ni grasa perdida.
+                Estimación por peso, tiempo y MET. No mide grasa perdida.
               </p>
             </section>
 
@@ -279,16 +278,13 @@ export default function ProgressSummaryDashboard({
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                  <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
                     Registraste{' '}
                     <strong>
                       {mostrarNumero(destacado.series)} series
                     </strong>
-                    {' '}en este ejercicio durante la semana.
-                    Esta es tu mejor serie de la semana.
-                    Continúa registrando tus entrenamientos
-                    para comparar tu rendimiento en
-                    condiciones equivalentes.
+                    {' '}esta semana. Esta fue tu mejor serie registrada.
+                    Sigue entrenando para comparar tu evolución.
                   </p>
 
                 </>
@@ -306,11 +302,7 @@ export default function ProgressSummaryDashboard({
             </p>
 
             <p className="px-3 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-              MAK FITNESS · Entrenamiento real,
-              para resultados reales.
-              Tus registros permiten evaluar la constancia
-              y el trabajo realizado; no prueban por sí
-              solos cambios corporales.
+              MAK FITNESS · Entrenamiento real, para resultados reales.
             </p>
 
           </>
