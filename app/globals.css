@@ -268,3 +268,934 @@ body {
   }
 
 }
+
+/* ==========================================================
+   MAK SOCIOS PREMIUM UI V3 - presentación solamente
+   Login y panel socio. No afecta las vistas de entrenamiento.
+   ========================================================== */
+
+.mak-login-page {
+  --mak-accent: #02afbb;
+  --mak-ink: #11151b;
+  --mak-field-ink: #101820;
+  --mak-field-bg: #f5f8fa;
+  --mak-field-border: #d7e0e6;
+  --mak-card-bg: #ffffff;
+  --mak-card-muted: #697782;
+  --mak-card-title: #101820;
+  min-height: 100dvh;
+  padding: clamp(12px, 2.8vw, 30px);
+  color: var(--mak-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 90% 5%, rgba(2, 175, 187, 0.12), transparent 34%),
+    linear-gradient(155deg, #f5fbfb 0%, #eef3f4 65%, #e9eff0 100%);
+}
+html.dark .mak-login-page {
+  --mak-ink: #effbfc;
+  --mak-field-ink: #ffffff;
+  --mak-field-bg: #101a20;
+  --mak-field-border: #34434a;
+  --mak-card-bg: #111a20;
+  --mak-card-muted: #a6b6bf;
+  --mak-card-title: #ffffff;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(2, 175, 187, 0.11), transparent 35%),
+    linear-gradient(155deg, #0b1115, #080d12);
+}
+.mak-login-frame { max-width: 960px; margin: 0 auto; }
+.mak-login-toolbar { display: flex; justify-content: space-between; align-items: center; min-height: 48px; margin-bottom: 14px; }
+.mak-login-toolbar-brand { font-size: 11px; font-weight: 900; letter-spacing: .2em; color: var(--mak-ink); }
+.mak-login-toolbar-brand span { color: #039ca9; }
+html.dark .mak-login-toolbar-brand span { color: #47deec; }
+.mak-login-layout { display: grid; grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); min-height: 590px; border: 1px solid rgba(3,23,33,.12); border-radius: 30px; overflow: hidden; box-shadow: 0 22px 70px rgba(8, 33, 44, .10); }
+.mak-login-hero { position: relative; isolation: isolate; overflow: hidden; background: linear-gradient(143deg, #15232d 0%, #09161b 64%, #07323a 100%); color: #ffffff; }
+.mak-login-hero::before { content: ""; pointer-events: none; position: absolute; inset: 0; opacity: .34; background: repeating-linear-gradient(132deg, transparent 0px, transparent 31px, rgba(47, 189, 199, .11) 32px, transparent 33px); }
+.mak-login-hero::after { content: ""; pointer-events: none; position: absolute; width: 270px; height: 270px; border: 1px solid rgba(79, 224, 232, .20); border-radius: 50%; right: -130px; bottom: -116px; box-shadow: 0 0 0 42px rgba(79,224,232,.035), 0 0 0 90px rgba(79,224,232,.03); }
+.mak-login-glow { position: absolute; z-index: -1; width: 320px; height: 320px; right: -90px; top: -165px; border-radius: 100%; background: rgba(2, 175, 187, .24); filter: blur(64px); pointer-events: none; }
+.mak-login-hero-body { display: flex; flex-direction: column; justify-content: space-between; min-height: 100%; position: relative; z-index: 1; padding: clamp(25px, 5vw, 42px); }
+.mak-login-identity { display: flex; align-items: center; gap: 12px; }
+.mak-login-symbol { width: 49px; height: 49px; display: grid; place-items: center; background: var(--mak-accent); color: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(2,175,187,.24); }
+.mak-login-eyebrow { color: #e5fbfc; font-size: 12px; letter-spacing: .24em; font-weight: 900; }
+.mak-login-eyebrow-caption { color: #8fc8cf; font-size: 9px; letter-spacing: .15em; font-weight: 700; margin-top: 2px; }
+.mak-login-kicker { color: #7ce3e8; font-size: 10px; font-weight: 800; letter-spacing: .2em; }
+.mak-login-headline { padding: 30px 0; }
+.mak-login-headline h1 { font-size: clamp(38px, 4.4vw, 62px); line-height: 1.02; font-weight: 950; letter-spacing: -.065em; margin: 10px 0 17px; }
+.mak-login-headline h1 span { color: #71e8ed; }
+.mak-login-official-slogan { max-width: 290px; font-size: 15px; font-weight: 500; line-height: 1.5; color: #d1e3e7; }
+.mak-login-hero-bottom { display: flex; align-items: center; gap: 11px; font-size: 9px; font-weight: 800; letter-spacing: .2em; color: #9fc5cd; }
+.mak-login-hero-rule { width: 42px; height: 2px; background: #26cbd3; border-radius: 2px; }
+.mak-login-panel { min-width: 0; display: flex; flex-direction: column; justify-content: center; background: var(--mak-card-bg); color: var(--mak-card-title); padding: clamp(24px, 4.8vw, 54px); }
+.mak-login-panel-eyebrow { display: block; font-size: 10px; letter-spacing: .16em; font-weight: 900; color: #039aa8; margin-bottom: 11px; }
+html.dark .mak-login-panel-eyebrow { color: #63e1e8; }
+.mak-login-panel-header h2 { font-size: clamp(23px, 3vw, 31px); line-height: 1.13; font-weight: 900; letter-spacing: -.045em; }
+.mak-login-panel-header p { font-size: 13px; line-height: 1.5; color: var(--mak-card-muted); margin-top: 9px; }
+.mak-login-form { display: grid; gap: 16px; margin-top: 27px; }
+.mak-login-form-group > label { display: block; font-size: 12px; line-height: 1.4; font-weight: 800; margin-bottom: 8px; }
+.mak-login-field-wrap { position: relative; }
+.mak-login-field-icon { position: absolute; z-index: 1; top: 50%; left: 15px; transform: translateY(-50%); pointer-events: none; color: #77909c; }
+.mak-login-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 54px;
+  padding: 0 16px 0 48px;
+  border: 1px solid var(--mak-field-border);
+  border-radius: 14px;
+  background: var(--mak-field-bg) !important;
+  color: var(--mak-field-ink) !important;
+  -webkit-text-fill-color: var(--mak-field-ink) !important;
+  caret-color: #02afbb;
+  font-size: 16px;
+  line-height: 1.25;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+  color-scheme: light;
+}
+html.dark .mak-login-input { color-scheme: dark; }
+.mak-login-input-password { padding-right: 52px; }
+.mak-login-input::placeholder { color: #81909a; -webkit-text-fill-color: #81909a; opacity: 1; }
+html.dark .mak-login-input::placeholder { color: #a1b2bd; -webkit-text-fill-color: #a1b2bd; }
+.mak-login-input:focus { border-color: #02afbb; box-shadow: 0 0 0 3px rgba(2, 175, 187, .16); }
+.mak-login-input:-webkit-autofill,
+.mak-login-input:-webkit-autofill:hover,
+.mak-login-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--mak-field-ink) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--mak-field-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--mak-field-bg) inset !important;
+  caret-color: #02afbb;
+}
+.mak-login-eye { position: absolute; top: 50%; right: 5px; transform: translateY(-50%); height: 44px; width: 44px; display: grid; place-items: center; border-radius: 11px; color: #728591; }
+.mak-login-eye:hover { background: rgba(2,175,187,.09); color: #028894; }
+html.dark .mak-login-eye { color: #bed1d9; }
+.mak-login-error { border: 1px solid #fecaca; border-radius: 11px; background: #fef2f2; color: #a61b1b; font-size: 13px; padding: 11px; }
+html.dark .mak-login-error { border-color: #83353c; background: #341920; color: #ffe5e7; }
+.mak-login-submit { margin-top: 4px; display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; min-height: 54px; border: 0; border-radius: 14px; background: #02afbb; color: #061e27; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 10px 22px rgba(2,175,187,.19); }
+.mak-login-submit:hover { background: #23c9d3; }
+.mak-login-submit:disabled { opacity: .58; cursor: not-allowed; }
+.mak-login-support { margin-top: 18px; text-align: center; }
+.mak-login-support button { min-height: 40px; padding: 5px 12px; font-size: 12px; font-weight: 750; color: #027c8a; text-decoration: none; }
+.mak-login-support button:hover { text-decoration: underline; }
+html.dark .mak-login-support button { color: #68d7e2; }
+.mak-login-help { margin-top: 8px; padding: 10px 12px; border-radius: 12px; font-size: 12px; line-height: 1.5; text-align: left; background: #ecfafb; color: #125763; }
+html.dark .mak-login-help { background: #133238; color: #caedef; }
+.mak-login-privacy { display: flex; justify-content: center; align-items: center; gap: 7px; border-top: 1px solid var(--mak-field-border); margin-top: 12px; padding-top: 17px; font-size: 11px; line-height: 1.5; color: var(--mak-card-muted); }
+.mak-login-privacy svg { flex-shrink: 0; color: #039fac; }
+.mak-login-footer { font-size: 10px; letter-spacing: .14em; font-weight: 700; text-align: center; color: #647781; padding: 14px 0 3px; }
+.mak-login-footer span { margin: 0 3px; }
+html.dark .mak-login-footer { color: #aec0c9; }
+
+/* Inicio socio: jerarquía compacta + espacio para el código de ingreso */
+.mak-home-page { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: linear-gradient(180deg, #eef5f6 0px, #f4f5f6 350px, #f4f4f5 100%); }
+html.dark .mak-home-page { background: linear-gradient(180deg, #0a2228 0px, #111419 345px, #09090b 100%); }
+.mak-home-header { position: relative; isolation: isolate; overflow: hidden; color: #fff; background: linear-gradient(110deg, #101a22 0%, #0c2830 66%, #073d44 100%); border-bottom: 1px solid rgba(45, 219, 223, .18); }
+.mak-home-header::after { content:""; position:absolute; z-index: -1; width: 260px; height: 260px; border-radius: 50%; right: -120px; top: -205px; border: 1px solid rgba(116,230,231,.25); box-shadow: 0 0 0 40px rgba(2,175,187,.04), 0 0 0 90px rgba(2,175,187,.03); pointer-events: none; }
+.mak-home-header-inner { display: flex; max-width: 1024px; margin: auto; padding: 25px 16px 31px; gap: 15px; justify-content: space-between; align-items: flex-start; }
+.mak-home-welcome { min-width: 0; }
+.mak-home-kicker { display: flex; align-items: center; gap: 7px; color: #5fd9e0; font-size: 10px; font-weight: 900; letter-spacing: .13em; }
+.mak-home-kicker-dot { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; background: #02afbb; box-shadow: 0 0 0 4px rgba(2,175,187,.13); }
+.mak-home-kicker-divider { color: #7e9da3; margin: 0 1px; }
+.mak-home-welcome h1 { color: #fff; font-size: clamp(23px, 5.2vw, 31px); line-height: 1.15; letter-spacing: -.047em; font-weight: 900; margin: 9px 0 5px; overflow-wrap: anywhere; }
+.mak-home-slogan { color: #b0d4d7; line-height: 1.4; font-size: 12px; }
+.mak-home-actions { display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
+.mak-home-logout { display: grid; place-items:center; width: 43px; height: 43px; border:1px solid rgba(255,255,255,.24); border-radius: 13px; background:rgba(255,255,255,.11); color:white; transition:background .2s; }
+.mak-home-logout:hover { background:rgba(255,255,255,.21); }
+.mak-home-body { position: relative; padding-top: 16px; }
+.mak-home-security-note { margin: 10px 0 2px; overflow: hidden; border: 1px solid #e6dcbb; border-radius: 13px; background: #fffaf0; color: #654d22; }
+.mak-home-security-note > summary { display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 9px 12px; list-style: none; cursor: pointer; }
+.mak-home-security-note > summary::-webkit-details-marker { display: none; }
+.mak-home-security-note > summary svg:first-child { flex-shrink: 0; color: #a7782d; }
+.mak-home-security-title { font-weight: 750; font-size: 12px; flex: 1; }
+.mak-home-security-optional { color: #8a744a; font-size: 10px; font-weight: 700; }
+.mak-home-security-chevron { flex-shrink: 0; color: #a7782d; transition: transform .2s ease; }
+.mak-home-security-note[open] .mak-home-security-chevron { transform: rotate(180deg); }
+.mak-home-security-note > p { margin: 0 12px 12px; padding: 10px 0 0; font-size: 12px; line-height: 1.5; border-top: 1px solid #eee1c6; }
+html.dark .mak-home-security-note { background: #241f15; border-color: #514022; color: #ffe1b0; }
+html.dark .mak-home-security-optional { color: #e8ca92; }
+html.dark .mak-home-security-note > p { border-color: #57482f; }
+.mak-home-grid { align-items: stretch; }
+.mak-home-grid > * { min-width: 0; }
+.mak-home-required-note { margin-top: 12px; }
+@media (min-width: 700px) { .mak-home-header-inner { padding: 36px 25px 42px; } .mak-home-body { padding-top: 20px; } }
+@media (max-width: 650px) {
+  .mak-login-page { padding: 12px; }
+  .mak-login-toolbar { min-height: 42px; margin-bottom: 10px; }
+  .mak-login-layout { grid-template-columns: 1fr; min-height: 0; border-radius: 24px; box-shadow: 0 15px 45px rgba(8,33,44,.12); }
+  .mak-login-hero-body { padding: 23px 23px 22px; }
+  .mak-login-hero { min-height: 202px; }
+  .mak-login-identity { gap: 10px; }
+  .mak-login-symbol { width: 40px; height: 40px; border-radius: 12px; }
+  .mak-login-identity .mak-login-eyebrow { font-size: 11px; }
+  .mak-login-headline { padding: 20px 0 4px; }
+  .mak-login-headline h1 { margin: 5px 0 7px; font-size: 34px; }
+  .mak-login-official-slogan { font-size: 12px; }
+  .mak-login-hero-bottom { display: none; }
+  .mak-login-panel { padding: 24px 23px 17px; }
+  .mak-login-panel-header h2 { font-size: 23px; }
+  .mak-login-panel-header p { margin-top: 4px; }
+  .mak-login-form { margin-top: 19px; gap: 13px; }
+  .mak-login-support { margin-top: 12px; }
+  .mak-login-privacy { padding-top: 12px; margin-top: 7px; }
+  .mak-login-footer { padding-top: 10px; }
+  .mak-home-header-inner { gap: 7px; padding: 20px 14px 22px; }
+  .mak-home-welcome h1 { max-width: 245px; }
+  .mak-home-slogan { font-size: 11px; max-width: 225px; }
+  .mak-home-actions { gap: 6px; }
+  .mak-home-logout { height: 42px; width: 42px; }
+}
+@media (max-width: 360px) {
+  .mak-home-kicker { font-size: 9px; }
+  .mak-home-welcome h1 { font-size: 21px; }
+  .mak-login-panel { padding: 20px 17px; }
+  .mak-login-hero-body { padding: 20px 19px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mak-login-input, .mak-login-submit, .mak-home-logout, .mak-home-security-chevron { transition: none !important; }
+}
+
+/* Control de tema integrado al encabezado oscuro, sin cambiar ThemeToggle */
+.mak-home-actions > button {
+  height: 43px;
+  width: 43px;
+  padding: 0;
+  border-radius: 13px;
+  color: #efffff;
+  background: rgba(255, 255, 255, .11);
+  border-color: rgba(255, 255, 255, .23);
+  box-shadow: none;
+}
+.mak-home-actions > button:hover { color: #ffffff; background: rgba(255,255,255,.2); }
+html.dark .mak-home-actions > button { color: #efffff; background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.23); }
+html.dark .mak-home-actions > button:hover { color: #ffffff; background: rgba(255,255,255,.2); }
+
+/* MAK_CLIENTES_CONTRASTE_V1 */
+
+/* Logotipo original */
+.mak-login-symbol {
+  background: #effdfe url('/mak-fitness-logo.png') center / contain no-repeat !important;
+  border: 1px solid #7bd5da;
+}
+.mak-login-symbol svg { display: none !important; }
+
+/* Login claro */
+.mak-login-hero {
+  background: linear-gradient(135deg, #123541, #08717d) !important;
+}
+
+/* Login oscuro: grafito y azul petroleo */
+html.dark .mak-login-page {
+  --mak-ink: #f0fcff;
+  --mak-field-ink: #ffffff;
+  --mak-field-bg: #193745;
+  --mak-field-border: #688e9b;
+  --mak-card-bg: #2d4754;
+  --mak-card-muted: #d2e5eb;
+  --mak-card-title: #ffffff;
+  background: linear-gradient(145deg, #466977, #294651) !important;
+}
+html.dark .mak-login-hero {
+  background: linear-gradient(135deg, #194452, #226d7a) !important;
+}
+html.dark .mak-login-panel {
+  background: #2d4754 !important;
+}
+html.dark .mak-login-input {
+  background: #193745 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #7eeaf0;
+}
+html.dark .mak-login-input::placeholder {
+  color: #c4d9e1 !important;
+  -webkit-text-fill-color: #c4d9e1 !important;
+}
+html.dark .mak-login-input:-webkit-autofill {
+  box-shadow: 0 0 0 1000px #193745 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Inicio oscuro: evitar fondo negro */
+html.dark .mak-home-page {
+  background: linear-gradient(180deg, #315463, #253e4b 380px, #293f49) !important;
+}
+html.dark .mak-home-header {
+  background: linear-gradient(120deg, #1a4655, #187080) !important;
+}
+html.dark .mak-home-grid > * {
+  background-color: #304b58 !important;
+  border-color: #597d8a !important;
+}
+
+/* MAK_AUTH_OVERLAY_V1 */
+.mak-login-submit:disabled::before {
+  content:none !important;
+  display:none !important;
+}
+.mak-login-submit:disabled { opacity:1; }
+
+.mak-auth-overlay {
+  position:fixed; inset:0; z-index:9999;
+  display:grid; place-items:center; padding:20px;
+  background:rgba(236,249,250,.97);
+  backdrop-filter:blur(12px);
+  animation:makAuthAppear .18s ease-out;
+}
+.mak-auth-panel {
+  width:min(100%,360px); text-align:center;
+  color:#19343f;
+}
+.mak-auth-spinner {
+  position:relative; display:grid; place-items:center;
+  width:112px; height:112px; margin:0 auto 24px;
+}
+.mak-auth-spinner::before {
+  content:""; position:absolute; inset:0;
+  border:3px solid #c4e8eb;
+  border-top-color:#02afbb;
+  border-right-color:#02afbb;
+  border-radius:50%;
+  animation:makAuthSpin 1s linear infinite;
+}
+.mak-auth-logo {
+  width:84px; height:84px; border-radius:22px;
+  background:#effdfe url('/mak-fitness-logo.png')
+    center / contain no-repeat;
+  box-shadow:0 8px 30px #0a53601a;
+}
+.mak-auth-brand {
+  font-size:12px; font-weight:900;
+  letter-spacing:.22em; color:#087c87;
+}
+.mak-auth-panel h2 {
+  margin:10px 0 6px;
+  font-size:21px; font-weight:850; line-height:1.25;
+}
+.mak-auth-panel > p:not(.mak-auth-brand) {
+  font-size:13px; color:#5f7480;
+}
+.mak-auth-dots {
+  display:flex; justify-content:center;
+  gap:7px; margin-top:24px;
+}
+.mak-auth-dots span {
+  height:7px; width:7px; border-radius:50%;
+  background:#02afbb;
+  animation:makAuthPulse .9s ease-in-out infinite;
+}
+.mak-auth-dots span:nth-child(2) { animation-delay:.15s; }
+.mak-auth-dots span:nth-child(3) { animation-delay:.3s; }
+
+html.dark .mak-auth-overlay {
+  background:rgba(35,62,73,.97);
+}
+html.dark .mak-auth-panel { color:#f1fbff; }
+html.dark .mak-auth-brand { color:#7ee8ee; }
+html.dark .mak-auth-panel > p:not(.mak-auth-brand) {
+  color:#cbdce3;
+}
+
+@keyframes makAuthAppear {
+  from { opacity:0; } to { opacity:1; }
+}
+@keyframes makAuthSpin {
+  to { transform:rotate(360deg); }
+}
+@keyframes makAuthPulse {
+  0%,100% { opacity:.3; transform:scale(.75); }
+  50% { opacity:1; transform:scale(1.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mak-auth-overlay,
+  .mak-auth-spinner::before,
+  .mak-auth-dots span {
+    animation:none !important;
+  }
+}
+
+/* MAK GAME GUIDE V5 */
+
+.mak-onboarding-lock {
+  overflow: hidden;
+}
+
+.maik-guide-launcher {
+  position: fixed;
+  right: 14px;
+  bottom: 18px;
+  z-index: 86;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(2, 175, 187, .26);
+  background: rgba(9, 40, 47, .92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 14px 28px rgba(0,0,0,.24);
+}
+
+.maik-game-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+}
+
+.maik-game-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 14, 20, .54);
+  backdrop-filter: blur(2px);
+}
+
+.maik-game-focus {
+  position: fixed;
+  z-index: 131;
+  border-radius: 24px;
+  border: 3px solid #40edf2;
+  box-shadow:
+    0 0 0 4px rgba(64, 237, 242, .10),
+    0 0 0 9999px rgba(2, 14, 20, .35);
+  pointer-events: none;
+  animation: makGuidePulse 1.3s ease-in-out infinite;
+}
+
+.maik-game-dialog {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 132;
+  width: min(920px, calc(100vw - 18px));
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.maik-game-character {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  min-height: 180px;
+  padding-bottom: 8px;
+  filter: drop-shadow(0 16px 26px rgba(0,0,0,.28));
+  animation: makGuideFloat 2s ease-in-out infinite;
+}
+
+.maik-game-panel {
+  position: relative;
+  border-radius: 28px;
+  border: 1px solid rgba(145, 243, 246, .7);
+  background: linear-gradient(180deg, #426676 0%, #3a5f6d 100%);
+  color: #fff;
+  padding: 18px 18px 16px;
+  box-shadow: 0 20px 70px rgba(0,0,0,.32);
+}
+
+html:not(.dark) .maik-game-panel {
+  background: linear-gradient(180deg, #eaf8fa 0%, #dceff3 100%);
+  color: #143743;
+}
+
+.maik-game-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
+
+html:not(.dark) .maik-game-close {
+  background: rgba(10, 50, 60, .08);
+  color: #24444f;
+}
+
+.maik-game-head {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-right: 52px;
+}
+
+.maik-game-kicker {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  color: #a6fbff;
+}
+
+html:not(.dark) .maik-game-kicker {
+  color: #0b919c;
+}
+
+.maik-game-step {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255,255,255,.88);
+}
+
+html:not(.dark) .maik-game-step {
+  color: #4c6974;
+}
+
+.maik-game-progress {
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  overflow: hidden;
+}
+
+html:not(.dark) .maik-game-progress {
+  background: rgba(10, 50, 60, .10);
+}
+
+.maik-game-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22dbe5, #89fbff);
+  transition: width .25s ease;
+}
+
+.maik-game-bubble {
+  position: relative;
+  margin-top: 14px;
+  border-radius: 24px;
+  background: rgba(0,0,0,.14);
+  padding: 18px 18px 16px;
+}
+
+html:not(.dark) .maik-game-bubble {
+  background: rgba(255,255,255,.80);
+}
+
+.maik-game-bubble::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  bottom: 28px;
+  border-width: 12px 12px 12px 0;
+  border-style: solid;
+  border-color: transparent rgba(0,0,0,.14) transparent transparent;
+}
+
+html:not(.dark) .maik-game-bubble::before {
+  border-color: transparent rgba(255,255,255,.80) transparent transparent;
+}
+
+.maik-game-title {
+  font-size: clamp(28px, 3vw, 46px);
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  animation: makGuideText .22s ease;
+}
+
+.maik-game-subtitle {
+  margin-top: 10px;
+  font-size: 20px;
+  line-height: 1.18;
+  font-weight: 800;
+  color: #93f4f7;
+  animation: makGuideText .26s ease;
+}
+
+html:not(.dark) .maik-game-subtitle {
+  color: #0b919c;
+}
+
+.maik-game-text {
+  margin-top: 14px;
+  font-size: 18px;
+  line-height: 1.7;
+  font-weight: 600;
+  color: rgba(255,255,255,.95);
+  animation: makGuideText .3s ease;
+}
+
+html:not(.dark) .maik-game-text {
+  color: #34535f;
+}
+
+.maik-game-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.maik-game-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.maik-game-btn-secondary {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
+
+html:not(.dark) .maik-game-btn-secondary {
+  background: #d8ecef;
+  color: #27444d;
+}
+
+.maik-game-btn-primary {
+  background: #02afbb;
+  color: #052d33;
+  box-shadow: 0 12px 24px rgba(2,175,187,.25);
+}
+
+.maik-game-btn:disabled {
+  opacity: .45;
+}
+
+/* helper flotante */
+
+.maik-helper {
+  position: fixed;
+  right: 14px;
+  bottom: 16px;
+  z-index: 84;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.maik-helper-panel {
+  position: relative;
+  width: min(360px, calc(100vw - 18px));
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px 16px 14px 12px;
+  border-radius: 24px;
+  border: 1px solid rgba(145,243,246,.34);
+  background: rgba(63, 97, 113, .95);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(0,0,0,.26);
+}
+
+html:not(.dark) .maik-helper-panel {
+  background: rgba(232, 247, 249, .97);
+  color: #153843;
+}
+
+.maik-helper-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255,255,255,.12);
+  color: inherit;
+}
+
+html:not(.dark) .maik-helper-close {
+  background: rgba(10,50,60,.08);
+}
+
+.maik-helper-character {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.maik-helper-kicker {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: #98f8fb;
+}
+
+html:not(.dark) .maik-helper-kicker {
+  color: #0c8f99;
+}
+
+.maik-helper-copy h3 {
+  margin-top: 6px;
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.maik-helper-copy p {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: rgba(255,255,255,.92);
+}
+
+html:not(.dark) .maik-helper-copy p {
+  color: #44626c;
+}
+
+.maik-helper-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 54px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(145,243,246,.30);
+  background: rgba(55, 90, 105, .95);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(0,0,0,.22);
+}
+
+html:not(.dark) .maik-helper-trigger {
+  background: rgba(230, 245, 247, .97);
+  color: #1b3e48;
+}
+
+.maik-helper-trigger-figure {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+}
+
+.maik-helper-trigger-label {
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* animaciones */
+
+@keyframes makGuidePulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
+@keyframes makGuideFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes makGuideText {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* responsive */
+
+@media (max-width: 720px) {
+  .maik-game-dialog {
+    width: calc(100vw - 14px);
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 8px;
+    bottom: 12px;
+  }
+
+  .maik-game-character {
+    min-height: 138px;
+    padding-bottom: 10px;
+  }
+
+  .maik-game-panel {
+    border-radius: 22px;
+    padding: 14px 14px 14px;
+  }
+
+  .maik-game-title {
+    font-size: 18px;
+  }
+
+  .maik-game-subtitle {
+    font-size: 14px;
+  }
+
+  .maik-game-text {
+    font-size: 13px;
+    line-height: 1.62;
+  }
+
+  .maik-game-actions {
+    justify-content: space-between;
+  }
+
+  .maik-game-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .maik-helper-panel {
+    width: min(320px, calc(100vw - 18px));
+    grid-template-columns: 72px minmax(0, 1fr);
+    padding: 12px 14px 12px 10px;
+  }
+
+  .maik-helper-copy h3 {
+    font-size: 18px;
+  }
+
+  .maik-helper-copy p {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maik-game-focus,
+  .maik-game-character,
+  .maik-game-title,
+  .maik-game-subtitle,
+  .maik-game-text {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* MAIK_UNIFICADO_V6 */
+
+.maik-pose {
+  display: inline-block;
+  flex-shrink: 0;
+  background-image: url('/maik-8-poses.webp');
+  background-size: 400% 200%;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+}
+
+.mak-onboarding-lock {
+  overflow: auto !important;
+}
+
+.maik-game-dim {
+  position: fixed !important;
+  background: rgba(2,17,24,.53) !important;
+  backdrop-filter: none !important;
+}
+
+.maik-game-focus {
+  background: transparent !important;
+  box-shadow:
+    0 0 0 4px #02afbb36,
+    0 0 22px #02afbb55 !important;
+  animation: none !important;
+}
+
+.maik-game-focus::after {
+  content: 'ESTÁS AQUÍ';
+  position: absolute;
+  top: -28px;
+  left: 7px;
+  padding: 4px 9px;
+  background: #02afbb;
+  color: #052f37;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.maik-game-title {
+  font-size: clamp(23px,3vw,30px) !important;
+}
+
+.maik-game-subtitle {
+  font-size: 16px !important;
+}
+
+.maik-game-text {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+.maik-helper-copy p {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.maik-helper-tour {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #02afbb;
+  color: #052f37;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.maik-guide-launcher,
+.maik-quest-launch,
+.mak-guide-launch {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .maik-game-title {
+    font-size: 21px !important;
+  }
+
+  .maik-game-subtitle,
+  .maik-game-text {
+    font-size: 15px !important;
+  }
+}
+
+
+/* MAIK_TRIGGER_FRAME_V1 */
+.maik-helper-trigger {
+  gap: 10px !important;
+  padding: 8px 14px 8px 8px !important;
+  align-items: center !important;
+}
+
+.maik-helper-trigger-figure {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(16,32,40,.96) 0%, rgba(30,54,67,.96) 100%) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 10px 22px rgba(0,0,0,.18) !important;
+}
+
+.maik-helper-trigger-figure .maik-pose {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.maik-helper-character {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.maik-helper-character .maik-pose {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+

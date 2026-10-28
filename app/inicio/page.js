@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   redirect,
 } from 'next/navigation'
@@ -5,6 +6,7 @@ import {
 import {
   LockKeyhole,
   LogOut,
+  ChevronDown,
 } from 'lucide-react'
 
 import {
@@ -21,7 +23,7 @@ import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import ProgressEntryCard from '@/components/ProgressEntryCard'
 import RoutineCard from '@/components/RoutineCard'
 import MemberAccessCodeCard from '@/components/MemberAccessCodeCard'
-
+import AppWelcomeGuide from '@/components/AppWelcomeGuide'
 
 export default async function InicioPage() {
   const supabase =
@@ -186,99 +188,49 @@ export default async function InicioPage() {
 
 
   return (
-    <main className="min-h-screen bg-zinc-100 pb-24 text-zinc-950 transition-colors duration-300 dark:bg-zinc-950 dark:text-white">
-
-      <header className="border-b border-zinc-200 bg-white px-4 py-4 transition-colors dark:border-white/10 dark:bg-zinc-950">
-
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3">
-
-          <div className="min-w-0 flex-1">
-
-            <p className="text-[10px] font-black uppercase tracking-[0.23em] text-cyan-600 dark:text-cyan-400">
-              MAK FITNESS
-            </p>
-
-            <h1 className="mt-1 break-words text-[clamp(1.35rem,5.5vw,1.875rem)] font-black leading-tight text-zinc-950 dark:text-white">
-              ¡Hola, {nombreSocio}!
-            </h1>
-
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              Vamos por un gran entrenamiento.
-            </p>
-
+    <main className="mak-home-page min-h-screen bg-zinc-100 pb-24 text-zinc-950 dark:bg-zinc-950 dark:text-white">
+      <header className="mak-home-header">
+        <div className="mak-home-header-inner">
+          <div className="mak-home-welcome">
+            <p className="mak-home-kicker"><span className="mak-home-kicker-dot" />MAK FITNESS <span className="mak-home-kicker-divider">/</span> CLIENTES</p>
+            <h1>¡Hola, {nombreSocio}!</h1>
+            <p className="mak-home-slogan">Entrenamiento real, para resultados reales.</p>
           </div>
-
-
-          <div className="flex shrink-0 items-center gap-2">
-
-            <ThemeToggle
-              compacto
-            />
-
-            <form
-              action="/api/auth/logout"
-              method="post"
-            >
-
-              <button
-                type="submit"
-                className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-950 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
-                aria-label="Cerrar sesión"
-                title="Cerrar sesión"
-              >
+          <div className="mak-home-actions">
+              <Link href="/configuracion"
+                aria-label="Configuración" title="Configuración"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20">
+                <span aria-hidden="true">⚙</span>
+              </Link>
+            <ThemeToggle compacto />
+            <form action="/api/auth/logout" method="post">
+              <button type="submit" className="mak-home-logout" aria-label="Cerrar sesión" title="Cerrar sesión">
                 <LogOut size={19} />
               </button>
-
             </form>
-
           </div>
-
         </div>
-
       </header>
 
-
-      <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-
+      <div className="mak-home-body mx-auto w-full max-w-5xl px-4">
         <MemberAccessCodeCard codigo={codigoSocio} />
+        <AppWelcomeGuide clienteId={cuenta.miembro_id} />
 
-        {!cuenta.clave_cambiada &&
-          !cuenta.cambio_clave_obligatorio && (
-
-          <section className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-
-            <div className="flex gap-3">
-
-              <LockKeyhole
-                size={22}
-                className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
-              />
-
-              <div>
-
-                <p className="font-bold text-amber-900 dark:text-amber-200">
-                  Protege tu cuenta
-                </p>
-
-                <p className="mt-1 text-sm leading-5 text-amber-800 dark:text-amber-100/80">
-                  Estás utilizando tu contraseña inicial. Recomendamos crear una contraseña personal.
-                </p>
-
-                <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                  El cambio es opcional para tu cuenta.
-                </p>
-
-              </div>
-
-            </div>
-
-          </section>
+        {!cuenta.clave_cambiada && !cuenta.cambio_clave_obligatorio && (
+          <details className="mak-home-security-note">
+            <summary>
+              <LockKeyhole size={18} aria-hidden="true" />
+              <span className="mak-home-security-title">Contraseña inicial activa</span>
+              <span className="mak-home-security-optional">Opcional</span>
+              <ChevronDown size={17} className="mak-home-security-chevron" aria-hidden="true" />
+            </summary>
+            <p>Por seguridad, recomendamos usar una contraseña personal. Puedes solicitar ayuda para cambiarla en recepción; no es obligatorio para tu cuenta.</p>
+          </details>
         )}
-
 
         {cuenta.cambio_clave_obligatorio && (
 
-          <section className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-500/20 dark:bg-red-500/10">
+          <section className="mak-home-required-note mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-500/20 dark:bg-red-500/10">
 
             <div className="flex gap-3">
 
@@ -294,7 +246,7 @@ export default async function InicioPage() {
                 </p>
 
                 <p className="mt-1 text-sm leading-5 text-red-800 dark:text-red-100/80">
-                  Tu cuenta utiliza una contraseña temporal. Antes de utilizar MAK Socios deberás crear una contraseña personal.
+                  Tu cuenta utiliza una contraseña temporal. Antes de utilizar MAK Clientes deberás crear una contraseña personal.
                 </p>
 
               </div>
@@ -305,7 +257,7 @@ export default async function InicioPage() {
         )}
 
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="mak-home-grid mt-3 grid grid-cols-2 gap-3">
 
         {errorMembresia ? (
 

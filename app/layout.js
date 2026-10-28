@@ -1,11 +1,12 @@
 import './globals.css'
+import MaikAssistant from '@/components/MaikAssistant'
 
 export const metadata = {
   title:
-    'MAK Socios | MAK FITNESS',
+    'MAK Clientes | MAK FITNESS',
 
   description:
-    'Membresía, entrenamiento y progreso para socios MAK FITNESS.',
+    'Membresía, entrenamiento y progreso para clientes MAK FITNESS.',
 }
 
 
@@ -48,6 +49,7 @@ export default function RootLayout({
 
       <body>
         {children}
+        <MaikAssistant />
       </body>
     </html>
   )
