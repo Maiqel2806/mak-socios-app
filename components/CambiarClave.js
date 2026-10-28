@@ -15,8 +15,8 @@ export default function CambiarClave() {
     evento.preventDefault()
     setMensaje('')
 
-    if (nueva.length < 12 || nueva.length > 72) {
-      setMensaje('La nueva contraseña debe tener entre 12 y 72 caracteres.')
+    if (nueva.length < 6 || nueva.length > 72) {
+      setMensaje('La nueva contraseña debe tener entre 6 y 72 caracteres.')
       return
     }
 
@@ -62,7 +62,7 @@ export default function CambiarClave() {
         <label htmlFor="nueva" className="mb-2 block text-sm font-semibold">
           Nueva contraseña
         </label>
-        <input id="nueva" type="password" required minLength={12}
+        <input id="nueva" type="password" required minLength={6}
           autoComplete="new-password" value={nueva}
           onChange={e => setNueva(e.target.value)} className={campo}/>
       </div>
@@ -77,7 +77,7 @@ export default function CambiarClave() {
       </div>
 
       <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-        Utiliza una contraseña única de al menos 12 caracteres.
+        Utiliza una contraseña única de al menos 6 caracteres.
         Después del cambio deberás ingresar nuevamente.
       </p>
 

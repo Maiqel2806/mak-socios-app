@@ -22,7 +22,7 @@ export async function POST(request) {
   if (typeof actual !== 'string' ||
       typeof nueva !== 'string' ||
       actual.length > 128 ||
-      nueva.length < 12 ||
+      nueva.length < 6 ||
       nueva.length > 72 ||
       actual === nueva) {
     return responder('Revisa las contraseñas ingresadas.')
