@@ -20,6 +20,7 @@ import {
   cargarPersonalizados,
   miembroDelUsuario,
   motorV4Activo,
+  estadoConRutinaV4,
 } from '@/lib/rutinas/servidor'
 
 
@@ -161,9 +162,16 @@ export async function GET() {
   }
 
 
+  let estado = data
+  if (motorV4Activo()) {
+    const miembroId = await miembroDelUsuario(supabase, userId)
+    estado = await estadoConRutinaV4(data, miembroId)
+  }
+
   return NextResponse.json({
     ok: true,
-    estado: data,
+    motor: motorV4Activo() ? 'v4' : 'anterior',
+    estado,
   })
 }
 

@@ -90,6 +90,7 @@ export default function RoutinePlanView({
   rutina,
   zonasCuidado = [],
   requiereRegenerar,
+  rutinaAnterior = false,
   procesandoRutina,
   error,
   diaActivo,
@@ -1147,6 +1148,24 @@ export default function RoutinePlanView({
             ))}
           </ul>
           {rutina?.advertencia && <p className="mt-3">{rutina.advertencia}</p>}
+        </section>
+      )}
+
+      {rutinaAnterior && rutina?.motor !== 'mak-adaptativo-v4' && (
+        <section className="mt-4 rounded-2xl border-2 border-cyan-400 bg-zinc-950 p-4 text-white shadow-lg">
+          <p className="text-lg font-black">Tenemos un nuevo generador de rutinas</p>
+          <p className="mt-1 text-[15px] leading-6 text-zinc-300">
+            Esta rutina se creó con el sistema anterior. La nueva se ajusta a tu peso,
+            talla, edad, objetivo y tiempo, y usa las máquinas nuevas del gimnasio.
+          </p>
+          <button
+            type="button"
+            onClick={generarRutina}
+            disabled={procesandoRutina}
+            className="mt-3 w-full rounded-xl bg-cyan-400 px-4 py-3 text-base font-black text-zinc-950 disabled:opacity-60"
+          >
+            {procesandoRutina ? 'Creando tu rutina…' : 'Crear mi rutina personalizada'}
+          </button>
         </section>
       )}
 

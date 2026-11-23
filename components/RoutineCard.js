@@ -1161,6 +1161,10 @@ export default function RoutineCard({
                   requiereRegenerar
                 }
 
+                rutinaAnterior={
+                  Boolean(estadoRutina?.rutina_anterior)
+                }
+
                 procesandoRutina={
                   procesandoRutina
                 }
