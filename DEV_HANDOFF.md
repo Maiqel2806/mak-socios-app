@@ -131,3 +131,10 @@ UI:
 - Entrenamiento: barra fija oscura con ejercicios hechos, porcentaje, tiempo y botón Terminar/Finalizar (lleva al cierre).
 - Corregido: el botón Finalizar seguía exigiendo pesos múltiplos de 2,5 kg en la app.
 - Consejos del plan agrupados en un desplegable para llegar antes a los días; tamaños de letra mínimos de 12 px en toda la app.
+
+## Cambios 2026-11-23 (5): selector de peso con pin y descanso en primer plano
+
+- `components/PesoSelector.js`: al tocar el peso se abre un selector a pantalla completa. Máquina = pila de placas con pin (tocar o deslizar), Barra = discos por lado con suma automática (barra de 20/15/10 kg), Mancuernas = rack. Botones ±, peso sugerido y opción "Escribir" para cualquier valor exacto. Vibración ligera al elegir.
+- El tipo se detecta por el equipamiento del ejercicio; el salto de placas usa `incremento_kg` (por defecto 2,5 kg).
+- Repeticiones con botones − / +.
+- `RestTimer` se dibuja en `document.body` (portal): la animación de la ventana de rutina rompía `position: fixed` y el descanso solo se veía al final de la página.

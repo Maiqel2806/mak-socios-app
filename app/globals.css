@@ -1653,3 +1653,11 @@ html.dark .mak-hoy { box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); }
 @media (prefers-reduced-motion: reduce) {
   .mak-tile, .mak-tile-flecha { transition: none; }
 }
+
+/* Selector de peso: animación del pin */
+@media (prefers-reduced-motion: no-preference) {
+  .mak-pin { animation: mak-pin-entra 180ms ease-out; }
+  @keyframes mak-pin-entra { from { opacity: .3; scale: .6; } }
+  .mak-disco { animation: mak-disco-entra 180ms ease-out; }
+  @keyframes mak-disco-entra { from { scale: 1 .6; opacity: .5; } }
+}

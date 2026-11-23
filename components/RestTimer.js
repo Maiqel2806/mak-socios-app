@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Minus, Plus, SkipForward, Trophy, X } from 'lucide-react'
 
 // Acompañante del entrenamiento en curso:
@@ -135,13 +136,19 @@ export default function RestTimer() {
 
   const progreso = total ? Math.min(1, Math.max(0, 1 - restante / total)) : 0
 
-  return (
+  // Se dibuja en <body>: así siempre queda en primer plano, aunque la
+  // rutina esté dentro de una ventana con animación (que rompe position: fixed).
+  const [montado, setMontado] = useState(false)
+  useEffect(() => setMontado(true), [])
+  if (!montado) return null
+
+  return createPortal(
     <>
       {record && (
         <div
           role="status"
           aria-live="polite"
-          className="mak-modal-sheet fixed left-1/2 top-4 z-[260] flex w-[min(92vw,420px)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-300 px-4 py-3 text-amber-950 shadow-xl"
+          className="mak-modal-sheet fixed left-1/2 top-4 z-[310] flex w-[min(92vw,420px)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-300 px-4 py-3 text-amber-950 shadow-xl"
         >
           <Trophy className="shrink-0" size={26} />
           <div className="min-w-0 flex-1">
@@ -161,7 +168,7 @@ export default function RestTimer() {
           role="timer"
           aria-live="off"
           aria-label={listo ? 'Descanso terminado' : `Descanso: ${formato(restante)}`}
-          className="fixed inset-x-0 bottom-0 z-[250] px-3 pb-[max(12px,env(safe-area-inset-bottom))]"
+          className="fixed inset-x-0 bottom-0 z-[300] px-3 pb-[max(12px,env(safe-area-inset-bottom))]"
         >
           <div className={`mx-auto max-w-xl overflow-hidden rounded-3xl shadow-2xl ring-1 ${listo ? 'bg-[#02AFBB] text-[#04232a] ring-cyan-300' : 'bg-[#0D1417] text-white ring-white/10'}`}>
             <div className="h-1.5 bg-white/10">
@@ -196,6 +203,7 @@ export default function RestTimer() {
           </div>
         </div>
       )}
-    </>
+    </>,
+    document.body
   )
 }

@@ -18,10 +18,13 @@ import {
 } from '@/lib/numeros'
 
 import {
+  rangoReps,
   resumenSeries,
   sugerirCarga,
   unoRM,
 } from '@/lib/progresion'
+
+import PesoSelector from './PesoSelector'
 
 import {
   avisarDescanso,
@@ -113,6 +116,8 @@ export default function WorkoutSeriesEditor({
 
   const actividad = esActividadPorTiempo(ejercicio)
   const incremento = incrementoDe(ejercicio)
+
+  const [selectorFila, setSelectorFila] = useState(null)
 
   const sugerencia = actividad
     ? null
@@ -414,7 +419,7 @@ export default function WorkoutSeriesEditor({
                   {!actividad && (
                     <div className="mt-3 grid grid-cols-2 gap-3">
 
-                      <label>
+                      <div>
                         <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
                           Peso (kg)
                         </span>
@@ -429,18 +434,19 @@ export default function WorkoutSeriesEditor({
                           >
                             <Minus size={16} />
                           </button>
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            autoComplete="off"
-                            placeholder={pesoSugerido || '0'}
-                            value={fila.peso}
+                          <button
+                            type="button"
                             disabled={guardando !== null}
-                            onChange={(e) =>
-                              cambiar(fila.numero, 'peso', limpiarDecimal(e.target.value, 2))
-                            }
-                            className="min-w-0 flex-1 bg-transparent text-center text-base font-bold tabular-nums text-zinc-950 outline-none disabled:opacity-50 dark:text-white"
-                          />
+                            onClick={() => setSelectorFila(fila.numero)}
+                            aria-label={`Elegir peso de la serie ${fila.numero}${fila.peso ? `: ${fila.peso} kg` : ''}`}
+                            className="min-w-0 flex-1 bg-transparent text-center text-lg font-black tabular-nums text-zinc-950 outline-none disabled:opacity-50 dark:text-white"
+                          >
+                            {fila.peso ? fila.peso : (
+                              <span className="text-base font-bold text-[#02AFBB]">
+                                {pesoSugerido ? `${pesoSugerido}?` : 'Elegir'}
+                              </span>
+                            )}
+                          </button>
                           <button
                             type="button"
                             aria-label={`Sumar ${String(incremento).replace('.', ',')} kg`}
@@ -451,26 +457,46 @@ export default function WorkoutSeriesEditor({
                             <Plus size={16} />
                           </button>
                         </div>
-                      </label>
+                      </div>
 
-                      <label>
+                      <div>
                         <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
                           Repeticiones
                         </span>
 
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          autoComplete="off"
-                          placeholder="12"
-                          value={fila.reps}
-                          disabled={guardando !== null}
-                          onChange={(e) =>
-                            cambiar(fila.numero, 'reps', limpiarDecimal(e.target.value, 0).slice(0, 3))
-                          }
-                          className="h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-center text-base font-bold tabular-nums text-zinc-950 outline-none focus:border-[#02AFBB] focus:ring-2 focus:ring-cyan-500/15 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-800 dark:text-white"
-                        />
-                      </label>
+                        <div className="flex h-12 items-stretch overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 focus-within:border-[#02AFBB] focus-within:ring-2 focus-within:ring-cyan-500/15 dark:border-white/10 dark:bg-zinc-800">
+                          <button
+                            type="button"
+                            aria-label="Una repetición menos"
+                            disabled={guardando !== null}
+                            onClick={() => cambiar(fila.numero, 'reps', String(Math.max(0, (Number(fila.reps) || 0) - 1)))}
+                            className="mak-interactive grid w-10 shrink-0 place-items-center text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-white/5"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="off"
+                            placeholder={String(rangoReps(ejercicio?.repeticiones_objetivo)?.max || 12)}
+                            value={fila.reps}
+                            disabled={guardando !== null}
+                            onChange={(e) =>
+                              cambiar(fila.numero, 'reps', limpiarDecimal(e.target.value, 0).slice(0, 3))
+                            }
+                            className="min-w-0 flex-1 bg-transparent text-center text-lg font-black tabular-nums text-zinc-950 outline-none disabled:opacity-50 dark:text-white"
+                          />
+                          <button
+                            type="button"
+                            aria-label="Una repetición más"
+                            disabled={guardando !== null}
+                            onClick={() => cambiar(fila.numero, 'reps', String(Math.min(999, (Number(fila.reps) || 0) + 1)))}
+                            className="mak-interactive grid w-10 shrink-0 place-items-center text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-white/5"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      </div>
 
                     </div>
                   )}
@@ -552,6 +578,21 @@ export default function WorkoutSeriesEditor({
           )}
         </div>
       )}
+
+      <PesoSelector
+        abierto={selectorFila !== null}
+        onCerrar={() => setSelectorFila(null)}
+        onElegir={(peso) => {
+          if (selectorFila !== null) {
+            cambiar(selectorFila, 'peso', String(peso).replace('.', ','))
+          }
+          setSelectorFila(null)
+        }}
+        valorInicial={filas.find((f) => f.numero === selectorFila)?.peso}
+        sugerido={pesoSugerido}
+        ejercicio={ejercicio}
+        incremento={Number(ejercicio?.incremento_kg) > 0 ? Number(ejercicio.incremento_kg) : 0}
+      />
     </section>
   )
 }
