@@ -319,7 +319,7 @@ export default function AdminEquipamiento() {
                   <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                     {preview.dias[diaPreview].ejercicios.map((x) => (
                       <li key={x.codigo} className="flex gap-3 rounded-xl border border-zinc-100 p-2.5 dark:border-white/10">
-                        <ExerciseDemo imagenes={x.imagenes} nombre={x.nombre} tamano="sm" />
+                        <ExerciseDemo imagenes={x.imagenes} nombre={x.nombre} modo="miniatura" />
                         <div className="min-w-0">
                           <p className="text-[10px] font-black uppercase tracking-wide text-[#02AFBB]">
                             {x.superserie || x.bloque} · {x.bloque_titulo}

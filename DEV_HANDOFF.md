@@ -113,3 +113,12 @@ UI:
 - PWA instalable: `app/manifest.js`, iconos `public/icono-*.png`, `app/apple-icon.png`.
 - Responsive: 4 accesos por fila en PC, escalado automático en pantallas ≥1700 px (TV), foco visible para control remoto, áreas seguras del iPhone en modo instalado.
 - SQL: `supabase/migrations/20261123_pesos_libres_series.sql` (cualquier peso al registrar series).
+
+## Cambios 2026-11-23 (3): inicio, MAIK, lesiones, visor de ejecución
+
+- Inicio: panel "Hoy" (`components/HomeHoy.js`) con el próximo día de rutina, botón "Empezar" que abre la rutina en ese día (evento `mak:abrir-rutina`), anillo semanal, días entrenados, racha, días de membresía y consejo del día.
+- MAIK: recorrido actualizado (9 pasos, saltar, teclado ←/→/Esc, clave `onboarding-v6` para que todos lo vean una vez) y asistente con preguntas frecuentes por pantalla e instalación de la app.
+- Lesiones: paso "Tu salud primero" (`components/PrecaucionesSalud.js`, `lib/precauciones.js`). Molestia leve → `observaciones` ("Precauciones: …"), la rutina la cuida. Dolor actual/condición médica → `limitaciones` ("Revisión: …"), revisa el entrenador y se muestra una guía segura (`components/GuiaRevisionSalud.js`) en lugar del bloqueo.
+- Rutina: aviso "Cuida tu …" y botón de alternativa segura en ejercicios que cargan la zona; motor v4 excluye esos ejercicios.
+- Ejecución: ya no se muestran imágenes en las tarjetas; botón "Ver ejecución" abre la demostración a pantalla completa por encima de todo (antes el visor quedaba detrás del modal).
+- Entrenamiento: barra fija arriba con progreso y tiempo.

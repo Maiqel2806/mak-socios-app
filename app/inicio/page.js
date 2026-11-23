@@ -26,6 +26,8 @@ import RoutineCard from '@/components/RoutineCard'
 import MemberAccessCodeCard from '@/components/MemberAccessCodeCard'
 import AppWelcomeGuide from '@/components/AppWelcomeGuide'
 import { esAdministrador } from '@/lib/rutinas/servidor'
+import { cargarHistorialSocio } from '@/lib/historial'
+import HomeHoy from '@/components/HomeHoy'
 
 export default async function InicioPage() {
   const supabase =
@@ -192,6 +194,28 @@ export default async function InicioPage() {
   const permisoAdmin =
     await esAdministrador(supabase).catch(() => ({ ok: false }))
 
+  // Panel "Hoy": próximo día de rutina, semana y racha
+  let historialHoy = null
+  if (accesoBeneficios) {
+    historialHoy = await cargarHistorialSocio(cuenta.miembro_id).catch(() => null)
+  }
+
+  const diasRutina = rutinaInicial?.rutina?.dias || []
+  let proximoDia = null
+  if (rutinaInicial?.tiene_rutina && diasRutina.length) {
+    const ultimo = Number(historialHoy?.ultimo_dia)
+    const indice = diasRutina.findIndex((d) => Number(d?.dia) === ultimo)
+    const siguiente = diasRutina[indice >= 0 ? (indice + 1) % diasRutina.length : 0]
+    proximoDia = {
+      dia: Number(siguiente?.dia) || 1,
+      titulo: siguiente?.titulo || 'Entrenamiento',
+      minutos: Number(siguiente?.duracion_estimada_min) || null,
+      ejercicios: (siguiente?.ejercicios || []).length,
+    }
+  }
+
+  const diasMembresia = Number(membresia?.dias_restantes)
+
   return (
     <main className="mak-home-page min-h-screen bg-zinc-100 pb-24 text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <header className="mak-home-header">
@@ -227,6 +251,18 @@ export default async function InicioPage() {
       <div className="mak-home-body mx-auto w-full max-w-5xl px-4">
         <MemberAccessCodeCard codigo={codigoSocio} />
         <AppWelcomeGuide clienteId={cuenta.miembro_id} />
+
+        <HomeHoy
+          nombre={nombreSocio}
+          activo={accesoBeneficios}
+          diasMembresia={Number.isFinite(diasMembresia) ? diasMembresia : null}
+          tienePerfil={Boolean(perfilFisico?.tiene_perfil ?? rutinaInicial?.tiene_perfil)}
+          requiereRevision={Boolean(rutinaInicial?.requiere_revision)}
+          proximoDia={proximoDia}
+          diasPlan={Number(rutinaInicial?.rutina?.dias_semana || diasRutina.length) || null}
+          semanaActual={historialHoy?.semana_actual || []}
+          racha={historialHoy?.racha || 0}
+        />
 
         {!cuenta.clave_cambiada && !cuenta.cambio_clave_obligatorio && (
           <details className="mak-home-security-note">

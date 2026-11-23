@@ -20,12 +20,16 @@ import {
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import RoutinePlanView from '@/components/RoutinePlanView'
 import { aNumero, limpiarDecimal } from '@/lib/numeros'
+import PrecaucionesSalud from '@/components/PrecaucionesSalud'
+import GuiaRevisionSalud from '@/components/GuiaRevisionSalud'
+import { zonasDelPerfil } from '@/lib/precauciones'
 
 
 const OBJETIVOS = [
@@ -400,6 +404,26 @@ export default function RoutineCard({
     setAbierto(true)
   }
 
+
+  // Apertura desde el panel "Hoy" del inicio (evento mak:abrir-rutina)
+  const abrirRef = useRef(null)
+  abrirRef.current = (dia) => {
+    abrir()
+    if (
+      dia &&
+      estadoRutina?.tiene_rutina &&
+      !estadoRutina?.requiere_regenerar &&
+      perfil?.tiene_perfil
+    ) {
+      setDiaActivo(Number(dia))
+    }
+  }
+
+  useEffect(() => {
+    const alAbrir = (e) => abrirRef.current?.(e.detail?.dia)
+    window.addEventListener('mak:abrir-rutina', alAbrir)
+    return () => window.removeEventListener('mak:abrir-rutina', alAbrir)
+  }, [])
 
   function cerrar() {
     if (ocupado) {
@@ -1098,6 +1122,10 @@ export default function RoutineCard({
                   rutina
                 }
 
+                zonasCuidado={
+                  zonasDelPerfil(perfil)
+                }
+
                 requiereRegenerar={
                   requiereRegenerar
                 }
@@ -1384,31 +1412,11 @@ export default function RoutineCard({
 
                 {requiereRevision ? (
 
-                  <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-
-                    <div className="flex gap-3">
-
-                      <ShieldAlert
-                        size={21}
-                        className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
-                      />
-
-                      <div>
-
-                        <p className="font-black text-amber-900 dark:text-amber-200">
-                          Revisión del entrenador
-                        </p>
-
-                        <p className="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-300">
-                          {estadoRutina?.message ||
-                            'Antes de generar tu rutina, un entrenador de MAK FITNESS debe revisar las limitaciones registradas.'}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </div>
+                  <GuiaRevisionSalud
+                    perfil={perfil}
+                    mensaje={estadoRutina?.message}
+                    onEditar={editarPerfil}
+                  />
 
                 ) : tieneRutina ? (
 
@@ -1556,7 +1564,7 @@ export default function RoutineCard({
                         'Tu entrenamiento'}
 
                       {paso === 4 &&
-                        'Antes de comenzar'}
+                        'Tu salud primero'}
                     </h2>
 
                   </div>
@@ -1970,70 +1978,17 @@ export default function RoutineCard({
 
                     <div className="space-y-4">
 
-                      <div className="rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
-
-                        <div className="flex gap-3">
-
-                          <ShieldAlert
-                            size={21}
-                            className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400"
-                          />
-
-                          <p className="text-sm leading-6 text-amber-900 dark:text-amber-200">
-                            Cuéntanos cualquier limitación o lesión. Si registras alguna, un entrenador deberá revisarla antes de que la app genere tu rutina.
-                          </p>
-
-                        </div>
-
-                      </div>
-
-
-                      <label className="block">
-
-                        <span className="text-sm font-black">
-                          Limitaciones o lesiones
-                        </span>
-
-                        <textarea
-                          rows="3"
-                          value={
-                            formulario.limitaciones
-                          }
-                          onChange={(evento) =>
-                            actualizar(
-                              'limitaciones',
-                              evento.target.value
-                            )
-                          }
-                          className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 text-base outline-none transition focus:border-cyan-500 dark:border-white/10 dark:bg-zinc-950"
-                          placeholder="Ej.: molestia en rodilla derecha, lesión previa de hombro..."
-                        />
-
-                      </label>
-
-
-                      <label className="block">
-
-                        <span className="text-sm font-black">
-                          Observaciones
-                        </span>
-
-                        <textarea
-                          rows="3"
-                          value={
-                            formulario.observaciones
-                          }
-                          onChange={(evento) =>
-                            actualizar(
-                              'observaciones',
-                              evento.target.value
-                            )
-                          }
-                          className="mt-2 w-full resize-none rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 text-base outline-none transition focus:border-cyan-500 dark:border-white/10 dark:bg-zinc-950"
-                          placeholder="Algo más que quieras contarnos..."
-                        />
-
-                      </label>
+                      <PrecaucionesSalud
+                        limitaciones={formulario.limitaciones}
+                        observaciones={formulario.observaciones}
+                        onChange={({ limitaciones, observaciones }) =>
+                          setFormulario((actual) => ({
+                            ...actual,
+                            limitaciones,
+                            observaciones,
+                          }))
+                        }
+                      />
 
 
                       <div className="rounded-2xl border border-zinc-200 p-4 dark:border-white/10">

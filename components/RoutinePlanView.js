@@ -26,6 +26,8 @@ import RestTimer from './RestTimer'
 
 import { imagenesDeEjercicio } from '@/lib/rutinas/medios'
 
+import { ZONAS, zonaEnRiesgo } from '@/lib/precauciones'
+
 import WorkoutFinishControl from './WorkoutFinishControl'
 
 import WorkoutCancelControl from './WorkoutCancelControl'
@@ -65,12 +67,14 @@ function BloqueRutinaExtra({
       )}
 
       {(ejercicios || []).length > 0 && (
-        <ul className="mt-3 flex gap-3 overflow-x-auto pb-1">
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {ejercicios.map((x) => (
-            <li key={x.nombre} className="w-24 shrink-0">
-              <ExerciseDemo imagenes={x.imagenes || [x.imagen_url]} nombre={x.nombre} tamano="md" />
-              <p className="mt-1.5 text-[11px] font-semibold leading-4">{x.nombre}</p>
-              {x.duracion && <p className="text-[11px] text-zinc-500">{x.duracion}</p>}
+            <li key={x.nombre} className="flex items-center justify-between gap-2 rounded-xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{x.nombre}</p>
+                {x.duracion && <p className="text-xs text-zinc-500">{x.duracion}</p>}
+              </div>
+              <ExerciseDemo imagenes={x.imagenes || [x.imagen_url]} nombre={x.nombre} etiqueta="Ver" />
             </li>
           ))}
         </ul>
@@ -82,6 +86,7 @@ function BloqueRutinaExtra({
 
 export default function RoutinePlanView({
   rutina,
+  zonasCuidado = [],
   requiereRegenerar,
   procesandoRutina,
   error,
@@ -676,6 +681,40 @@ export default function RoutinePlanView({
         <RestTimer />
 
 
+        {/* Barra fija: progreso y tiempo siempre visibles mientras se entrena */}
+        <div className="sticky top-0 z-30 -mx-4 -mt-4 mb-4 border-b border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/90 sm:-mx-6 sm:-mt-6 sm:px-6">
+          <div className="mx-auto flex w-full max-w-4xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="truncate text-xs font-bold text-zinc-700 dark:text-zinc-200">
+                  {ejerciciosEntrenamiento.filter((item) => item.completado === true).length} de {ejerciciosEntrenamiento.length} ejercicios
+                </p>
+                <p className="mak-cifra shrink-0 text-lg tabular-nums text-zinc-950 dark:text-white" aria-label="Tiempo de entrenamiento">
+                  {tiempoTranscurrido()}
+                </p>
+              </div>
+              <div
+                className="mt-1.5 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
+                role="progressbar"
+                aria-label="Progreso del entrenamiento"
+                aria-valuemin={0}
+                aria-valuemax={ejerciciosEntrenamiento.length}
+                aria-valuenow={ejerciciosEntrenamiento.filter((item) => item.completado === true).length}
+              >
+                <div
+                  className="h-full rounded-full bg-[#02AFBB] transition-[width] duration-500"
+                  style={{
+                    width: `${ejerciciosEntrenamiento.length
+                      ? (ejerciciosEntrenamiento.filter((item) => item.completado === true).length / ejerciciosEntrenamiento.length) * 100
+                      : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+
         <div className="mx-auto w-full max-w-4xl">
 
 
@@ -741,23 +780,6 @@ export default function RoutinePlanView({
                   {ejerciciosEntrenamiento.filter((item) => item.completado === true).length} de {ejerciciosEntrenamiento.length} ejercicios completados
                 </p>
 
-                <div
-                  className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10"
-                  role="progressbar"
-                  aria-label="Progreso del entrenamiento"
-                  aria-valuemin={0}
-                  aria-valuemax={ejerciciosEntrenamiento.length}
-                  aria-valuenow={ejerciciosEntrenamiento.filter((item) => item.completado === true).length}
-                >
-                  <div
-                    className="h-full rounded-full bg-[#02AFBB] transition-[width] duration-500"
-                    style={{
-                      width: `${ejerciciosEntrenamiento.length
-                        ? (ejerciciosEntrenamiento.filter((item) => item.completado === true).length / ejerciciosEntrenamiento.length) * 100
-                        : 0}%`,
-                    }}
-                  />
-                </div>
 
               </div>
 
@@ -789,19 +811,6 @@ export default function RoutinePlanView({
 
                   <div className="flex items-start gap-3">
 
-                    <div className="w-20 shrink-0 sm:w-24">
-                      <ExerciseDemo
-                        imagenes={imagenesDeEjercicio({
-                          ...ejercicio,
-                          nombre: ejercicio?.nombre_realizado,
-                        })}
-                        nombre={ejercicio?.nombre_realizado}
-                        tecnica={ejercicio?.tecnica}
-                        tamano="md"
-                      />
-                    </div>
-
-
                     <div className="min-w-0 flex-1">
 
                       <span className="mak-bloque-letra">{indice + 1}</span>
@@ -829,6 +838,16 @@ export default function RoutinePlanView({
                           ? ` · ${ejercicio.equipamiento}`
                           : ''}
                       </p>
+
+                      <ExerciseDemo
+                        imagenes={imagenesDeEjercicio({
+                          ...ejercicio,
+                          nombre: ejercicio?.nombre_realizado,
+                        })}
+                        nombre={ejercicio?.nombre_realizado}
+                        tecnica={ejercicio?.tecnica}
+                        className="mt-2.5"
+                      />
 
                     </div>
 
@@ -1364,6 +1383,11 @@ export default function RoutinePlanView({
             <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
               {(dia?.ejercicios || []).length} ejercicios
             </p>
+            {zonasCuidado.length > 0 && (
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                Cuidando: {zonasCuidado.map((z) => ZONAS[z]?.nombre.toLowerCase()).join(', ')}
+              </p>
+            )}
             {(dia?.ejercicios || []).some((x) => x?.superserie) && (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Las letras iguales (C1, C2) se hacen en superserie
@@ -1404,6 +1428,9 @@ export default function RoutinePlanView({
                   ejercicio?.bloque ||
                   String(indice + 1)
 
+                const zonaRiesgo =
+                  zonaEnRiesgo(ejercicioVisible, zonasCuidado)
+
                 return (
 
                   <li
@@ -1417,15 +1444,6 @@ export default function RoutinePlanView({
                   >
 
                     <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
-
-                      <div className="w-24 shrink-0 sm:w-32">
-                        <ExerciseDemo
-                          imagenes={imagenesDeEjercicio(ejercicioVisible)}
-                          nombre={ejercicioVisible?.nombre}
-                          tecnica={ejercicioVisible?.tecnica}
-                          tamano="md"
-                        />
-                      </div>
 
                       <div className="min-w-0 flex-1">
 
@@ -1461,6 +1479,20 @@ export default function RoutinePlanView({
                             Sustituye a: {ejercicio?.nombre}
                           </p>
                         )}
+
+                        {zonaRiesgo && (
+                          <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-xs leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+                            <p className="font-bold">Cuida tu {ZONAS[zonaRiesgo].nombre.toLowerCase()}</p>
+                            <p>{ZONAS[zonaRiesgo].consejo} Te recomendamos cambiarlo por una alternativa.</p>
+                          </div>
+                        )}
+
+                        <ExerciseDemo
+                          imagenes={imagenesDeEjercicio(ejercicioVisible)}
+                          nombre={ejercicioVisible?.nombre}
+                          tecnica={ejercicioVisible?.tecnica}
+                          className="mt-2.5"
+                        />
 
                       </div>
 
@@ -1524,9 +1556,11 @@ export default function RoutinePlanView({
                                   clave
                                 )
                               }
-                              className="mak-interactive flex-1 rounded-xl border border-zinc-200 px-3 py-2.5 text-xs font-bold text-zinc-700 hover:border-[#02AFBB] hover:text-[#027c87] dark:border-white/10 dark:text-zinc-200"
+                              className={zonaRiesgo
+                                ? 'mak-interactive flex-1 rounded-xl bg-amber-500 px-3 py-2.5 text-xs font-bold text-amber-950 hover:bg-amber-400'
+                                : 'mak-interactive flex-1 rounded-xl border border-zinc-200 px-3 py-2.5 text-xs font-bold text-zinc-700 hover:border-[#02AFBB] hover:text-[#027c87] dark:border-white/10 dark:text-zinc-200'}
                             >
-                              ¿Máquina ocupada? Ver alternativas
+                              {zonaRiesgo ? 'Cambiar por una alternativa segura' : '¿Máquina ocupada? Ver alternativas'}
                             </button>
 
                             {tieneVariante && (

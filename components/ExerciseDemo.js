@@ -4,81 +4,34 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Dumbbell, Maximize2, Pause, Play, X } from 'lucide-react'
+import { Dumbbell, Pause, Play, PlayCircle, X } from 'lucide-react'
 
-// Muestra la ejecución del ejercicio alternando la posición inicial y
-// final (efecto GIF ligero, ~25 KB por ejercicio). Si el gimnasio carga
-// un GIF o imagen propia, se muestra tal cual.
+// Demostración de la técnica de un ejercicio.
+//
+// modo="boton"  (por defecto): muestra un botón "Ver ejecución". Al tocarlo
+//               abre la animación a pantalla completa, superpuesta, sin
+//               mover ni tapar permanentemente la rutina.
+// modo="miniatura": miniatura animada (solo para el panel de administración).
+//
+// La animación alterna posición inicial y final. Si el gimnasio carga un
+// GIF o video propio en el futuro, se muestra igual.
 
-const TAMANOS = {
-  sm: 'h-16 w-16 rounded-xl',
-  md: 'aspect-[4/3] w-full rounded-2xl',
-  lg: 'aspect-[4/3] w-full rounded-3xl',
-}
-
-export default function ExerciseDemo({
-  imagenes = [],
-  nombre = '',
-  tecnica = '',
-  tamano = 'md',
-  ampliable = true,
-}) {
-  const cuadros = (imagenes || []).filter(Boolean)
-  const contenedor = useRef(null)
-  const [cuadro, setCuadro] = useState(0)
-  const [visible, setVisible] = useState(false)
-  const [pausado, setPausado] = useState(false)
-  const [abierto, setAbierto] = useState(false)
-  const [fallo, setFallo] = useState(false)
-
-  // Reproduce solo cuando está en pantalla
-  useEffect(() => {
-    const nodo = contenedor.current
-    if (!nodo || typeof IntersectionObserver === 'undefined') {
-      setVisible(true)
-      return
-    }
-    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { rootMargin: '80px' })
-    obs.observe(nodo)
-    return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) setPausado(true)
-  }, [])
-
-  useEffect(() => {
-    if (cuadros.length < 2 || pausado || (!visible && !abierto)) return
-    const id = setInterval(() => setCuadro((c) => (c + 1) % cuadros.length), 1100)
-    return () => clearInterval(id)
-  }, [cuadros.length, pausado, visible, abierto])
-
-  useEffect(() => {
-    if (!abierto) return
-    const cerrar = (e) => e.key === 'Escape' && setAbierto(false)
-    window.addEventListener('keydown', cerrar)
-    return () => window.removeEventListener('keydown', cerrar)
-  }, [abierto])
-
-  const sinImagen = !cuadros.length || fallo
-
-  const lienzo = (clase, grande = false) => (
+function Lienzo({ cuadros, cuadro, nombre, clase, onError, fallo }) {
+  return (
     <div className={`relative overflow-hidden bg-white ${clase}`}>
-      {sinImagen ? (
+      {!cuadros.length || fallo ? (
         <div className="grid h-full w-full place-items-center bg-gradient-to-br from-zinc-100 to-zinc-200 text-zinc-400 dark:from-zinc-800 dark:to-zinc-900 dark:text-zinc-600">
-          <Dumbbell size={grande ? 40 : 22} />
+          <Dumbbell size={36} />
         </div>
       ) : (
         cuadros.map((src, i) => (
           <img
             key={src}
             src={src}
-            alt={i === 0 ? `Demostración: ${nombre}` : ''}
+            alt={i === 0 ? `Ejecución de ${nombre}` : ''}
             aria-hidden={i !== 0}
-            loading="lazy"
             decoding="async"
-            onError={() => setFallo(true)}
+            onError={onError}
             className="absolute inset-0 h-full w-full object-contain transition-opacity duration-300"
             style={{ opacity: i === cuadro ? 1 : 0 }}
           />
@@ -86,34 +39,84 @@ export default function ExerciseDemo({
       )}
     </div>
   )
+}
+
+export default function ExerciseDemo({
+  imagenes = [],
+  nombre = '',
+  tecnica = '',
+  modo = 'boton',
+  etiqueta = 'Ver ejecución',
+  className = '',
+}) {
+  const cuadros = (imagenes || []).filter(Boolean)
+  const [abierto, setAbierto] = useState(false)
+  const [cuadro, setCuadro] = useState(0)
+  const [pausado, setPausado] = useState(false)
+  const [fallo, setFallo] = useState(false)
+  const botonCerrar = useRef(null)
+  const disparador = useRef(null)
+
+  const animando = modo === 'miniatura' || abierto
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) setPausado(true)
+  }, [])
+
+  useEffect(() => {
+    if (!animando || pausado || cuadros.length < 2) return
+    const id = window.setInterval(() => setCuadro((c) => (c + 1) % cuadros.length), 1000)
+    return () => window.clearInterval(id)
+  }, [animando, pausado, cuadros.length])
+
+  useEffect(() => {
+    if (!abierto) return
+    const alTeclado = (e) => {
+      if (e.key === 'Escape') cerrar()
+      if (e.key === ' ' && cuadros.length > 1) {
+        e.preventDefault()
+        setPausado((p) => !p)
+      }
+    }
+    window.addEventListener('keydown', alTeclado)
+    window.setTimeout(() => botonCerrar.current?.focus(), 30)
+    return () => window.removeEventListener('keydown', alTeclado)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abierto])
+
+  function cerrar() {
+    setAbierto(false)
+    setCuadro(0)
+    window.setTimeout(() => disparador.current?.focus(), 30)
+  }
+
+  if (modo === 'miniatura') {
+    return (
+      <Lienzo
+        cuadros={cuadros}
+        cuadro={cuadro}
+        nombre={nombre}
+        fallo={fallo}
+        onError={() => setFallo(true)}
+        clase={`h-16 w-16 shrink-0 rounded-xl ring-1 ring-black/5 dark:ring-white/10 ${className}`}
+      />
+    )
+  }
+
+  if (!cuadros.length) return null
 
   return (
     <>
-      <div ref={contenedor} className={`group relative shrink-0 ${tamano === 'sm' ? '' : 'w-full'}`}>
-        {ampliable && !sinImagen ? (
-          <button
-            type="button"
-            onClick={() => setAbierto(true)}
-            aria-label={`Ver cómo se hace: ${nombre}`}
-            className="mak-interactive block w-full"
-          >
-            {lienzo(`${TAMANOS[tamano]} ring-1 ring-black/5 dark:ring-white/10`)}
-          </button>
-        ) : (
-          lienzo(`${TAMANOS[tamano]} ring-1 ring-black/5 dark:ring-white/10`)
-        )}
-
-        {tamano !== 'sm' && !sinImagen && (
-          <>
-            <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-full bg-zinc-950/75 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white backdrop-blur">
-              {cuadros.length > 1 ? (cuadro === 0 ? 'Inicio' : 'Final') : 'Técnica'}
-            </span>
-            <span className="pointer-events-none absolute bottom-2.5 right-2.5 grid h-8 w-8 place-items-center rounded-full bg-zinc-950/70 text-white backdrop-blur">
-              <Maximize2 size={14} />
-            </span>
-          </>
-        )}
-      </div>
+      <button
+        ref={disparador}
+        type="button"
+        onClick={() => setAbierto(true)}
+        className={`mak-interactive inline-flex min-h-10 items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-800 hover:border-cyan-400 dark:border-cyan-500/25 dark:bg-cyan-500/10 dark:text-cyan-200 ${className}`}
+      >
+        <PlayCircle size={17} aria-hidden="true" />
+        {etiqueta}
+      </button>
 
       {abierto &&
         typeof document !== 'undefined' &&
@@ -121,65 +124,79 @@ export default function ExerciseDemo({
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={`Técnica: ${nombre}`}
-            className="mak-modal-backdrop fixed inset-0 z-[90] flex items-end justify-center bg-zinc-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-            onClick={() => setAbierto(false)}
+            aria-label={`Ejecución: ${nombre}`}
+            className="mak-visor fixed inset-0 z-[400] flex flex-col bg-zinc-950/95 text-white backdrop-blur-sm"
+            onClick={cerrar}
           >
             <div
-              className="mak-modal-sheet w-full max-w-lg overflow-hidden rounded-t-3xl bg-white text-zinc-950 shadow-2xl dark:bg-zinc-900 dark:text-white sm:rounded-3xl"
+              className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(16px,env(safe-area-inset-top))] sm:px-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-5">
-                <div className="min-w-0">
-                  <p className="mak-eyebrow">Cómo se hace</p>
-                  <h3 className="mak-display truncate text-xl">{nombre}</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAbierto(false)}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-100 dark:bg-white/10"
-                  aria-label="Cerrar"
-                >
-                  <X size={18} />
-                </button>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-cyan-300">Así se hace</p>
+                <h3 className="mak-display truncate text-2xl sm:text-3xl">{nombre}</h3>
               </div>
+              <button
+                ref={botonCerrar}
+                type="button"
+                onClick={cerrar}
+                aria-label="Cerrar"
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/10 hover:bg-white/20"
+              >
+                <X size={22} />
+              </button>
+            </div>
 
-              <div className="px-5">{lienzo('aspect-[4/3] w-full rounded-2xl ring-1 ring-black/5', true)}</div>
+            <div className="flex min-h-0 flex-1 items-center justify-center px-3 sm:px-8" onClick={(e) => e.stopPropagation()}>
+              <Lienzo
+                cuadros={cuadros}
+                cuadro={cuadro}
+                nombre={nombre}
+                fallo={fallo}
+                onError={() => setFallo(true)}
+                clase="aspect-[4/3] max-h-full w-full max-w-4xl rounded-3xl"
+              />
+            </div>
 
+            <div
+              className="mx-auto w-full max-w-4xl px-4 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:px-8"
+              onClick={(e) => e.stopPropagation()}
+            >
               {cuadros.length > 1 && (
-                <div className="flex items-center justify-between gap-3 px-5 pt-3">
-                  <div className="flex gap-1.5">
-                    {cuadros.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setPausado(true)
-                          setCuadro(i)
-                        }}
-                        className={`rounded-full px-3 py-1.5 text-xs font-bold ${i === cuadro ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950' : 'bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300'}`}
-                      >
-                        {i === 0 ? 'Posición inicial' : 'Posición final'}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex items-center justify-center gap-2">
+                  {cuadros.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setPausado(true)
+                        setCuadro(i)
+                      }}
+                      aria-pressed={i === cuadro}
+                      className={`min-h-10 rounded-full px-4 text-xs font-bold ${i === cuadro ? 'bg-white text-zinc-950' : 'bg-white/10 text-white'}`}
+                    >
+                      {i === 0 ? 'Inicio' : 'Final'}
+                    </button>
+                  ))}
                   <button
                     type="button"
                     onClick={() => setPausado((p) => !p)}
-                    className="grid h-9 w-9 place-items-center rounded-full bg-[#02AFBB] text-white"
                     aria-label={pausado ? 'Reproducir' : 'Pausar'}
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[#02AFBB] text-[#04232a]"
                   >
-                    {pausado ? <Play size={15} /> : <Pause size={15} />}
+                    {pausado ? <Play size={17} /> : <Pause size={17} />}
                   </button>
                 </div>
               )}
 
               {tecnica && (
-                <p className="px-5 pt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{tecnica}</p>
+                <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-6 text-zinc-200 sm:text-base">
+                  {tecnica}
+                </p>
               )}
 
-              <p className="px-5 pb-6 pt-3 text-[11px] text-zinc-400">
-                Ilustración de referencia. Ante cualquier duda, pide al entrenador que revise tu técnica.
+              <p className="mt-3 text-center text-[11px] text-zinc-400">
+                Imagen de referencia. Si tienes dudas, pide al entrenador que revise tu técnica.
               </p>
             </div>
           </div>,

@@ -14,54 +14,81 @@ const PASOS = [
     id: 'intro',
     pose: 'saluda',
     titulo: '¡Hola! Soy MAIK',
-    subtitulo: 'Tu guía dentro de MAK Clientes',
+    subtitulo: 'Tu guía en MAK Clientes',
     texto:
-      'Te mostraré rápidamente cómo usar la app para que aproveches mejor cada sección.',
+      'En menos de un minuto te muestro lo que puedes hacer aquí. Puedes saltar el recorrido cuando quieras.',
     objetivo: null,
+  },
+  {
+    id: 'hoy',
+    pose: 'motiva',
+    titulo: 'Tu día, de un vistazo',
+    subtitulo: 'Qué te toca y cómo vas',
+    texto:
+      'Aquí ves el entrenamiento que te toca hoy, los días que entrenaste esta semana y tu racha. Toca “Empezar” y vas directo a tu rutina.',
+    objetivo: '.mak-hoy',
   },
   {
     id: 'codigo',
     pose: 'explica',
     titulo: 'Tu código de ingreso',
-    subtitulo: 'Preséntalo en recepción',
+    subtitulo: 'Para recepción',
     texto:
-      'Aquí verás tu código personal para registrar tu ingreso al gimnasio.',
+      'Muéstralo en recepción para registrar tu ingreso al gimnasio.',
     objetivo: '.mak-home-body > section:first-child',
   },
   {
     id: 'membresia',
     pose: 'piensa',
     titulo: 'Mi membresía',
-    subtitulo: 'Tu plan y vigencia',
+    subtitulo: 'Plan, vigencia y pagos',
     texto:
-      'Consulta tu plan actual, la vigencia y los días disponibles de tu membresía.',
+      'Revisa cuántos días te quedan y las formas de pago para renovar sin filas.',
     objetivo: '.mak-home-grid > :nth-child(1)',
   },
   {
     id: 'rutina',
     pose: 'entrena',
     titulo: 'Mi rutina',
-    subtitulo: 'Tu espacio de entrenamiento',
+    subtitulo: 'Hecha para ti',
     texto:
-      'Aquí podrás iniciar tu entrenamiento y registrar las series realizadas.',
+      'Se arma con tu objetivo, tu nivel y las máquinas del gimnasio. Si tienes una lesión, la rutina la cuida. En cada ejercicio toca “Ver ejecución” para ver cómo se hace.',
     objetivo: '.mak-home-grid > :nth-child(2)',
+  },
+  {
+    id: 'entreno',
+    pose: 'motiva',
+    titulo: 'Mientras entrenas',
+    subtitulo: 'Te acompaño en cada serie',
+    texto:
+      'Anota peso y repeticiones: te mostraré lo que hiciste la vez anterior, cuánto subir y el descanso con cuenta regresiva.',
+    objetivo: null,
   },
   {
     id: 'progreso',
     pose: 'celebra',
     titulo: 'Mi progreso',
-    subtitulo: 'Tu avance real',
+    subtitulo: 'Tus récords y tu constancia',
     texto:
-      'Revisa tu constancia, tus repeticiones registradas y tu evolución general.',
+      'Mira tus récords personales, el volumen de cada semana y tus últimos entrenamientos.',
     objetivo: '.mak-home-grid > :nth-child(3)',
+  },
+  {
+    id: 'snack',
+    pose: 'descansa',
+    titulo: 'Snack Bar',
+    subtitulo: 'Nutrición MAK',
+    texto:
+      'Consulta el menú del snack bar para recargar energía antes o después de entrenar.',
+    objetivo: '.mak-home-grid > :nth-child(4)',
   },
   {
     id: 'fin',
     pose: 'aprueba',
-    titulo: '¡Todo listo!',
-    subtitulo: 'Ya puedes empezar',
+    titulo: '¡Listo para entrenar!',
+    subtitulo: 'Un consejo final',
     texto:
-      'Ahora ya conoces lo esencial de la app. Cuando quieras, podrás volver a abrir esta guía.',
+      'Instala la app en tu celular desde el menú del navegador (“Agregar a pantalla de inicio”). Si me necesitas, toca mi botón abajo a la derecha.',
     objetivo: null,
   },
 ]
@@ -88,7 +115,7 @@ export default function AppWelcomeGuide({ clienteId }) {
   const [rect, setRect] = useState(null)
 
   const storageKey = useMemo(
-    () => `mak-clientes-onboarding-v5-${clienteId}`,
+    () => `mak-clientes-onboarding-v6-${clienteId}`,
     [clienteId]
   )
 
@@ -127,6 +154,8 @@ export default function AppWelcomeGuide({ clienteId }) {
 
     const selector = PASOS[paso]?.objetivo
 
+    // Si el elemento no está en pantalla (p. ej. sin membresía activa), sigue sin resaltar
+
     const actualizar = () => {
       setRect(obtenerRect(selector))
     }
@@ -154,6 +183,17 @@ export default function AppWelcomeGuide({ clienteId }) {
       document.body.classList.remove('mak-onboarding-lock')
     }
   }, [abierto, paso])
+
+  useEffect(() => {
+    if (!abierto) return
+    const alTeclado = (e) => {
+      if (e.key === 'ArrowRight') siguiente()
+      if (e.key === 'ArrowLeft') anterior()
+      if (e.key === 'Escape') finalizar()
+    }
+    window.addEventListener('keydown', alTeclado)
+    return () => window.removeEventListener('keydown', alTeclado)
+  })
 
   const actual = PASOS[paso]
   const ultimo = paso === PASOS.length - 1
@@ -251,21 +291,19 @@ export default function AppWelcomeGuide({ clienteId }) {
             </div>
 
             <div className="maik-game-panel">
-              {!primeraVez && (
-                <button
-                  type="button"
-                  className="maik-game-close"
-                  aria-label="Cerrar guía"
-                  onClick={() => setAbierto(false)}
-                >
-                  <X size={18}/>
-                </button>
-              )}
+              <button
+                type="button"
+                className="maik-game-close"
+                aria-label="Cerrar guía"
+                onClick={finalizar}
+              >
+                <X size={18}/>
+              </button>
 
               <div className="maik-game-head">
-                <div className="maik-game-kicker">MAK CLIENTES · TUTORIAL</div>
+                <div className="maik-game-kicker">Recorrido</div>
                 <div className="maik-game-step">
-                  PASO {paso + 1} DE {PASOS.length}
+                  {paso + 1} de {PASOS.length}
                 </div>
               </div>
 
@@ -291,20 +329,30 @@ export default function AppWelcomeGuide({ clienteId }) {
               </div>
 
               <div className="maik-game-actions">
-                <button
-                  type="button"
-                  className="maik-game-btn maik-game-btn-secondary"
-                  onClick={anterior}
-                  disabled={paso === 0}
-                >
-                  <ArrowLeft size={16} />
-                  <span>Anterior</span>
-                </button>
+                {paso === 0 ? (
+                  <button
+                    type="button"
+                    className="maik-game-btn maik-game-btn-secondary"
+                    onClick={finalizar}
+                  >
+                    <span>Saltar</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="maik-game-btn maik-game-btn-secondary"
+                    onClick={anterior}
+                  >
+                    <ArrowLeft size={16} />
+                    <span>Anterior</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
                   className="maik-game-btn maik-game-btn-primary"
                   onClick={siguiente}
+                  autoFocus
                 >
                   {ultimo ? (
                     <>
