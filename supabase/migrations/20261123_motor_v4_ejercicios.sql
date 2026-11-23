@@ -2,7 +2,7 @@
 -- MAK Socios · Activar el motor de rutinas v4 (parte 2)
 -- Fecha: 2026-11-23
 --
--- Registra los 112 ejercicios del motor v4 en public.app_ejercicios con
+-- Registra los 116 ejercicios del motor v4 en public.app_ejercicios con
 -- el mismo id que usa la app, para que los entrenamientos puedan
 -- referenciarlos. No modifica ni borra ejercicios existentes.
 --
@@ -143,6 +143,10 @@ begin
     ('966c6760-67f7-5081-b637-13560d4c1c4f', 'Lanzamientos de balón medicinal', 'Cuerpo completo', 'principiante', 'Balón medicinal', 'Sube el balón sobre la cabeza y lánzalo al suelo con fuerza usando abdomen.', '/ejercicios/One-Arm_Medicine_Ball_Slam/0.webp', 'v4_slam_balon', 'funcional', 'funcional', true),
     ('78804335-afd0-593e-b15e-c537d08a0840', 'Saltos al cajón', 'Cuádriceps', 'intermedio', 'Cajón pliométrico', 'Salta con ambos pies y aterriza suave. Baja caminando, no saltando.', '/ejercicios/Front_Box_Jump/0.webp', 'v4_salto_cajon', 'funcional', 'funcional', true),
     ('a83ad304-0d8b-5c3f-9ed0-a37e1aba6999', 'Saltar la cuerda', 'Cardio', 'principiante', 'Cuerda para saltar', 'Saltos pequeños sobre las puntas, muñecas giran la cuerda.', '/ejercicios/Rope_Jumping/0.webp', 'v4_saltar_cuerda', 'funcional', 'funcional', false),
+    ('d23f1a35-b123-5294-9a9f-ce27988cc196', 'Sentadilla al banco a ritmo', 'Cuádriceps', 'principiante', 'Banco plano', 'Siéntate suave en el banco y ponte de pie sin impulso. Ritmo constante, sin saltar.', '/ejercicios/Chair_Squat/0.webp', 'v4_sentadilla_banco_ritmo', 'funcional', 'funcional', true),
+    ('26959ab6-9ed0-53fd-86a9-44b033e75ff7', 'Subida al banco con elevación de rodilla', 'Cuádriceps', 'principiante', 'Banco plano', 'Sube al banco, eleva la rodilla contraria y baja controlado. Alterna piernas.', '/ejercicios/Step-up_with_Knee_Raise/0.webp', 'v4_step_up_rodilla', 'funcional', 'funcional', true),
+    ('fa5d19e2-e8b6-58a1-8646-f314c590e8cb', 'Press de pecho de pie en polea', 'Pecho', 'principiante', 'Poleas / cruce de poleas', 'De pie con un pie adelante, empuja las manijas al frente y regresa controlado.', '/ejercicios/Standing_Cable_Chest_Press/0.webp', 'v4_press_pecho_polea_pie', 'fuerza', 'emp_h', true),
+    ('c1bf2db4-e834-5569-8262-ae1e5528d22b', 'Elevación diagonal en polea', 'Core', 'principiante', 'Poleas / cruce de poleas', 'Desde la cadera hacia arriba en diagonal, girando el tronco con el abdomen firme.', '/ejercicios/Standing_Cable_Lift/0.webp', 'v4_elevacion_polea_diagonal', 'core', 'core_rot', false),
     ('65a5afe3-e4c9-50b8-9133-ce519108cb5e', 'Jumping jacks', 'Cardio', 'principiante', 'Peso corporal', 'Abre piernas y brazos a la vez de forma rítmica.', '/ejercicios/Star_Jump/0.webp', 'v4_jumping_jacks', 'funcional', 'funcional', false),
     ('3c6e01c1-db76-53d4-8dc2-9cfbda8c560e', 'Caminata inclinada en caminadora', 'Cardio', 'principiante', 'Caminadora', 'Inclinación 8-12%, ritmo en el que puedas hablar con dificultad. Sin sostenerte de las barras.', '/ejercicios/Walking_Treadmill/0.webp', 'v4_caminadora_inclinada', 'cardio', 'cardio', false),
     ('20bcc49b-c5b7-5cfc-9416-97094b65ef3a', 'Intervalos en caminadora', 'Cardio', 'intermedio', 'Caminadora', 'Alterna 30 s rápido / 60 s suave. Ajusta la velocidad a tu nivel.', '/ejercicios/Running_Treadmill/0.webp', 'v4_intervalos_caminadora', 'cardio', 'cardio', false),
@@ -195,5 +199,5 @@ begin
 end
 $$;
 
--- Verificación: debe devolver 112
+-- Verificación: debe devolver 116
 select count(*) as ejercicios_motor_v4 from public.app_ejercicios where codigo like 'v4\_%';

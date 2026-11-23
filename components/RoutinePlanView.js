@@ -1112,6 +1112,12 @@ export default function RoutinePlanView({
             )} · hasta {maxMin} min por sesión
           </p>
 
+          <p className="mt-1 text-xs text-zinc-400">
+            {rutina?.motor === 'mak-adaptativo-v4'
+              ? 'Generada con el motor MAK v4 (personalizado)'
+              : 'Generada con el sistema anterior'}
+          </p>
+
         </div>
 
 
@@ -1125,6 +1131,30 @@ export default function RoutinePlanView({
         </button>
 
       </div>
+
+      {rutina?.motor === 'mak-adaptativo-v4' && (
+        <section className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 text-[15px] leading-6 text-cyan-950 dark:border-cyan-500/20 dark:bg-cyan-500/[0.07] dark:text-cyan-50">
+          <p className="font-bold">Hecha para ti</p>
+          <ul className="mt-2 flex flex-wrap gap-1.5 text-sm">
+            {[
+              rutina?.nivel && `Nivel ${rutina.nivel}`,
+              rutina?.perfil_corporal?.imc && `IMC ${String(rutina.perfil_corporal.imc).replace('.', ',')}`,
+              rutina?.perfil_corporal?.edad && `${rutina.perfil_corporal.edad} años`,
+              rutina?.dias_semana && textoDias(rutina.dias_semana),
+              maxMin && `${maxMin} min`,
+            ].filter(Boolean).map((t) => (
+              <li key={t} className="rounded-full bg-white/80 px-2.5 py-1 font-semibold dark:bg-white/10">{t}</li>
+            ))}
+          </ul>
+          {rutina?.advertencia && <p className="mt-3">{rutina.advertencia}</p>}
+        </section>
+      )}
+
+      {rutina?.motor !== 'mak-adaptativo-v4' && rutina?.advertencia && (
+        <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+          {rutina.advertencia}
+        </div>
+      )}
 
 
       {requiereRegenerar && (
@@ -1815,13 +1845,7 @@ export default function RoutinePlanView({
       )
       }
 
-      {rutina?.advertencia && (
 
-        <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-          {rutina.advertencia}
-        </div>
-
-      )}
 
 
       {error && (

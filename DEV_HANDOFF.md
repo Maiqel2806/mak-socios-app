@@ -152,3 +152,11 @@ UI:
 - `supabase/migrations/20261123_motor_v4_ejercicios.sql`: registra los 112 ejercicios v4 en `app_ejercicios` (excluidos del motor v3 con un equipo inactivo). Probado en Postgres 16 con réplica del esquema.
 - Objetivo secundario opcional (`lib/objetivos.js`), guardado como línea en `observaciones`; el motor v4 ajusta reps, descansos, volumen o cardio según el secundario.
 - Variantes: si el ejercicio viene del motor anterior, se usa la función SQL de variantes.
+
+## Cambios 2026-11-23 (8): rutinas lógicas según el cuerpo de cada socio
+
+- `lib/rutinas/perfilCorporal.js`: IMC (peso/talla²), categoría y edad (del perfil o de `miembros.fecha_nacimiento`). Sobrepeso principiante u obesidad → sin dominadas, fondos, colgarse, flexiones completas ni saltos/trote; prioridad a máquinas; cardio de bajo impacto. Obesidad II-III → además sin ejercicios exigentes a una pierna ni silla romana, y volumen inicial reducido. ≥55 años → sin impacto ni carga axial pesada; ≥65 → volumen reducido. Principiante con peso normal → sin dominadas ni fondos completos. Bajo peso + "bajar grasa" → plan de tonificación con aviso.
+- Estructura semanal distinta por objetivo (pérdida de grasa con días de circuito, tonificación con día de glúteo, salud con cuerpo completo…), no solo otras repeticiones.
+- 4 ejercicios nuevos de bajo impacto (116 en total). Migración `20261123_motor_v4_ejercicios.sql` regenerada y probada.
+- La rutina muestra "Hecha para ti" (nivel, IMC, edad, días, minutos) y qué motor la generó.
+- Pruebas: 1.296 combinaciones (6 tipos de cuerpo × 6 objetivos × 3 niveles × 4 frecuencias × 3 duraciones): 0 ejercicios no aptos, 0 días con menos de 7 ejercicios, 0 sesiones fuera de tiempo.

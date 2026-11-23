@@ -248,6 +248,24 @@ async function generarRutinaV4(
     ...(perfilTabla || {}),
   }
 
+  // Edad desde la fecha de nacimiento del socio si el perfil no la tiene
+  if (!Number(perfil.edad)) {
+    const { data: miembro } = await admin
+      .from('miembros')
+      .select('fecha_nacimiento')
+      .eq('id', miembroId)
+      .maybeSingle()
+
+    if (miembro?.fecha_nacimiento) {
+      const nacimiento = new Date(miembro.fecha_nacimiento)
+      const hoy = new Date()
+      let edad = hoy.getFullYear() - nacimiento.getFullYear()
+      const m = hoy.getMonth() - nacimiento.getMonth()
+      if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--
+      if (edad > 4 && edad < 110) perfil.edad = edad
+    }
+  }
+
   // Popularidad de ejercicios en las rutinas activas de otros socios:
   // el motor la usa para repartir y evitar que todos tengan lo mismo
   const {
