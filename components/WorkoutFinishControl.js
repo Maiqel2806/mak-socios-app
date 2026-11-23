@@ -63,11 +63,6 @@ function ejercicioValido(ejercicio) {
         reps < 1
       ) return false
 
-      if (
-        Math.abs(
-          peso / 2.5 - Math.round(peso / 2.5)
-        ) > 0.0000001
-      ) return false
     }
   }
 

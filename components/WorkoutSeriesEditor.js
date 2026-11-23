@@ -360,7 +360,7 @@ export default function WorkoutSeriesEditor({
           {cantidadValida && (
             <>
               {!actividad && historial?.ultima ? (
-                <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-xs leading-5 text-cyan-950 dark:border-cyan-500/20 dark:bg-cyan-500/[0.07] dark:text-cyan-100">
+                <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-sm leading-6 text-cyan-950 dark:border-cyan-500/20 dark:bg-cyan-500/[0.07] dark:text-cyan-100">
                   <p>
                     <span className="font-bold">Última vez:</span> {resumenSeries(historial.ultima.series)}
                     {historial.mejor_peso > 0 && (
@@ -415,7 +415,7 @@ export default function WorkoutSeriesEditor({
                     <div className="mt-3 grid grid-cols-2 gap-3">
 
                       <label>
-                        <span className="mb-1.5 block text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                        <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
                           Peso (kg)
                         </span>
 
@@ -454,7 +454,7 @@ export default function WorkoutSeriesEditor({
                       </label>
 
                       <label>
-                        <span className="mb-1.5 block text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                        <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
                           Repeticiones
                         </span>
 

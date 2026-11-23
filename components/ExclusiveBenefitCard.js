@@ -191,29 +191,22 @@ export default function ExclusiveBenefitCard({
   if (tipo === 'snack') {
     return (
       <div
-        aria-label="Próximamente"
-        className="relative isolate flex min-h-[145px] w-full items-center justify-center overflow-hidden rounded-3xl border border-zinc-300 bg-gradient-to-br from-zinc-200 via-zinc-300 to-zinc-400 shadow-sm dark:border-zinc-700 dark:from-zinc-800 dark:via-zinc-800 dark:to-zinc-900"
+        aria-label="Snack Bar: próximamente"
+        className="mak-tile mak-tile-snack"
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-white/10 backdrop-blur-[1px] dark:bg-black/10"
-        />
+        <Coffee aria-hidden="true" className="mak-tile-deco" strokeWidth={1.2} />
 
-        <Coffee
-          aria-hidden="true"
-          size={126}
-          strokeWidth={1.35}
-          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 -rotate-12 text-zinc-500/25 blur-[1px] dark:text-zinc-200/20"
-        />
+        <div className="flex items-start justify-between gap-3">
+          <div className="mak-tile-icono">
+            <Coffee size={24} />
+          </div>
+          <span className="mak-tile-badge">Muy pronto</span>
+        </div>
 
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-white/30 blur-3xl dark:bg-white/5"
-        />
-
-        <p className="relative z-10 max-w-full px-2 text-center text-[clamp(0.75rem,3.4vw,1.125rem)] font-black uppercase tracking-[0.04em] text-zinc-700/85 dark:text-zinc-200/85 sm:tracking-[0.08em]">
-          PRÓXIMAMENTE
-        </p>
+        <div>
+          <p className="mak-tile-titulo">{titulo || 'Snack Bar'}</p>
+          <p className="mak-tile-sub">Menú y nutrición MAK</p>
+        </div>
       </div>
     )
   }
@@ -232,7 +225,7 @@ export default function ExclusiveBenefitCard({
           </div>
 
 
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
             Disponible
           </span>
 
@@ -291,13 +284,13 @@ export default function ExclusiveBenefitCard({
 
         <div className="relative z-10">
 
-          <p className="font-black text-zinc-700 dark:text-zinc-200">
+          <p className="text-lg font-black text-zinc-700 dark:text-zinc-200">
             {titulo}
           </p>
 
           <div className="mt-1 flex items-center gap-1.5">
 
-            <span className="text-xs font-semibold text-zinc-500">
+            <span className="text-sm font-semibold text-zinc-500">
               Exclusivo miembros activos
             </span>
 

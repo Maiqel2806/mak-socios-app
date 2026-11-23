@@ -19,18 +19,11 @@ const CONSEJOS = [
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
-function saludo(hora) {
-  if (hora < 12) return 'Buenos días'
-  if (hora < 19) return 'Buenas tardes'
-  return 'Buenas noches'
-}
-
 function abrirRutina(dia) {
   window.dispatchEvent(new CustomEvent('mak:abrir-rutina', { detail: { dia } }))
 }
 
 export default function HomeHoy({
-  nombre,
   activo,
   diasMembresia,
   tienePerfil,
@@ -70,8 +63,10 @@ export default function HomeHoy({
     <section className="mak-hoy mt-4 overflow-hidden rounded-[28px] text-white" aria-label="Tu día en MAK FITNESS">
       <div className="grid gap-5 p-5 sm:p-6 md:grid-cols-[1.4fr_1fr] md:items-center">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-cyan-200/90">
-            {ahora ? `${saludo(ahora.getHours())}, ${nombre}` : `Hola, ${nombre}`}
+          <p className="text-sm font-semibold capitalize text-cyan-200/90">
+            {ahora
+              ? new Intl.DateTimeFormat('es-EC', { weekday: 'long', day: 'numeric', month: 'long' }).format(ahora)
+              : 'Hoy'}
           </p>
 
           {!activo ? (
@@ -103,7 +98,7 @@ export default function HomeHoy({
             </>
           ) : proximoDia ? (
             <>
-              <p className="mt-3 text-xs font-semibold text-zinc-400">
+              <p className="mt-3 text-sm font-semibold text-zinc-300">
                 {yaEntrenoHoy ? '¡Ya entrenaste hoy! Lo siguiente es' : 'Hoy te toca'}
               </p>
               <h2 className="mak-display mt-1 text-3xl leading-[0.95] sm:text-[2.6rem]">
@@ -136,8 +131,8 @@ export default function HomeHoy({
         </div>
 
         {activo && tienePerfil && (
-          <div className="flex items-center gap-4 rounded-3xl bg-white/[0.06] p-4 ring-1 ring-white/10">
-            <div className="relative h-[84px] w-[84px] shrink-0">
+          <div className="flex items-center gap-3 rounded-3xl bg-white/[0.06] p-3.5 ring-1 ring-white/10 sm:gap-4 sm:p-4">
+            <div className="relative h-[72px] w-[72px] shrink-0 sm:h-[84px] sm:w-[84px]">
               <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90" aria-hidden="true">
                 <circle cx="40" cy="40" r={radio} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="8" />
                 <circle
@@ -158,13 +153,13 @@ export default function HomeHoy({
               </div>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300"><CalendarDays size={14} aria-hidden="true" /> Esta semana</p>
-              <ol className="mt-2 flex gap-1.5" aria-label="Días entrenados esta semana">
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-zinc-300"><CalendarDays size={14} aria-hidden="true" /> Esta semana</p>
+              <ol className="mt-2 grid grid-cols-7 gap-1" aria-label="Días entrenados esta semana">
                 {DIAS.map((d, i) => (
                   <li
                     key={d + i}
                     title={entrenados.has(i) ? 'Entrenaste' : i === hoy ? 'Hoy' : ''}
-                    className={`grid h-7 w-7 place-items-center rounded-full text-[11px] font-bold ${
+                    className={`grid aspect-square w-full max-w-9 place-items-center rounded-full text-[13px] font-bold ${
                       entrenados.has(i)
                         ? 'bg-[#02AFBB] text-[#04232a]'
                         : i === hoy
@@ -176,11 +171,11 @@ export default function HomeHoy({
                   </li>
                 ))}
               </ol>
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-zinc-300">
+              <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-zinc-300">
                 <Flame size={14} className="text-orange-400" aria-hidden="true" />
                 {racha > 0 ? `${racha} ${racha === 1 ? 'semana' : 'semanas'} seguidas` : 'Empieza tu racha esta semana'}
                 {Number.isFinite(diasMembresia) && diasMembresia >= 0 && (
-                  <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[11px]">
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
                     Membresía: {diasMembresia} {diasMembresia === 1 ? 'día' : 'días'}
                   </span>
                 )}
@@ -198,7 +193,7 @@ export default function HomeHoy({
       >
         <Lightbulb size={18} className="mt-0.5 shrink-0 text-amber-300" aria-hidden="true" />
         <span className="flex-1">{CONSEJOS[consejo]}</span>
-        <span className="shrink-0 text-xs font-bold text-cyan-300">Otro consejo</span>
+        <span className="shrink-0 text-sm font-bold text-cyan-300">Otro</span>
       </button>
     </section>
   )

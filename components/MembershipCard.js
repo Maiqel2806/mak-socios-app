@@ -474,21 +474,23 @@ export default function MembershipCard({
         onClick={
           abrir
         }
-        className="mak-interactive group flex min-h-[136px] w-full flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-zinc-900"
+        className="mak-tile mak-tile-membresia group"
       >
+
+        <WalletCards aria-hidden="true" className="mak-tile-deco" strokeWidth={1.2} />
 
         <div className="flex items-start justify-between gap-3">
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400">
+          <div className="mak-tile-icono">
             <WalletCards
-              size={22}
+              size={24}
             />
           </div>
 
 
           <ChevronRight
-            size={21}
-            className="text-zinc-300 transition group-hover:translate-x-1"
+            size={22}
+            className="mak-tile-flecha"
           />
 
         </div>
@@ -496,7 +498,7 @@ export default function MembershipCard({
 
         <div>
 
-          <p className="font-black text-zinc-950 dark:text-white">
+          <p className="mak-tile-titulo">
             Mi membresía
           </p>
 
@@ -507,7 +509,7 @@ export default function MembershipCard({
               className={
                 vigenciaUrgente
                   ? 'mt-2 inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-3 py-2 text-white shadow-sm'
-                  : 'mt-2 flex items-end gap-1.5'
+                  : 'mt-1.5 flex items-end gap-1.5'
               }
             >
 
@@ -515,7 +517,7 @@ export default function MembershipCard({
                 className={
                   vigenciaUrgente
                     ? 'text-2xl font-black leading-none text-white'
-                    : 'text-2xl font-black leading-none text-cyan-600 dark:text-cyan-400'
+                    : 'mak-cifra text-4xl leading-none text-white'
                 }
               >
                 {dias}
@@ -525,7 +527,7 @@ export default function MembershipCard({
                 className={
                   vigenciaUrgente
                     ? 'text-xs font-bold text-white'
-                    : 'text-xs font-semibold text-zinc-500'
+                    : 'pb-0.5 text-sm font-semibold text-white/85'
                 }
               >
                 {dias === 1
@@ -543,7 +545,7 @@ export default function MembershipCard({
 
           ) : (
 
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mak-tile-sub">
               Consulta tu plan y vigencia
             </p>
 

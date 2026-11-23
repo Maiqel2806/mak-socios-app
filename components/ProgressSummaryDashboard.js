@@ -97,7 +97,7 @@ function HistorialSocio({ historial }) {
         <div className="mt-5 flex h-40 items-end gap-2" role="img" aria-label="Gráfico de volumen semanal">
           {historial.semanas.map((s, i) => (
             <div key={s.semana} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
-              <span className="text-[10px] font-semibold tabular-nums text-zinc-500">
+              <span className="text-xs font-semibold tabular-nums text-zinc-500">
                 {s.volumen ? (s.volumen >= 1000 ? `${mostrarNumero(s.volumen / 1000)}t` : mostrarNumero(s.volumen)) : ''}
               </span>
               <div
@@ -108,7 +108,7 @@ function HistorialSocio({ historial }) {
             </div>
           ))}
         </div>
-        <div className="mt-2 flex justify-between text-[10px] font-semibold text-zinc-400">
+        <div className="mt-2 flex justify-between text-xs font-semibold text-zinc-400">
           <span>hace 8 semanas</span>
           <span>esta semana</span>
         </div>
@@ -214,7 +214,7 @@ export default function ProgressSummaryDashboard({
               <ArrowLeft size={20} />
             </Link>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">
                 MAK FITNESS
               </p>
               <h1 className="mak-display text-2xl sm:text-3xl">
@@ -348,7 +348,7 @@ export default function ProgressSummaryDashboard({
                     : `Estimación basada en ${estimadas} sesiones finalizadas.`}
               </p>
 
-              <p className="mt-2 text-[11px] leading-5 text-zinc-400">
+              <p className="mt-2 text-xs leading-5 text-zinc-400">
                 Estimación por peso, tiempo y MET. No mide grasa perdida.
               </p>
             </section>

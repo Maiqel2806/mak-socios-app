@@ -195,7 +195,7 @@ export default function ExerciseDemo({
                 </p>
               )}
 
-              <p className="mt-3 text-center text-[11px] text-zinc-400">
+              <p className="mt-3 text-center text-xs text-zinc-400">
                 Imagen de referencia. Si tienes dudas, pide al entrenador que revise tu técnica.
               </p>
             </div>

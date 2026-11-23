@@ -681,38 +681,49 @@ export default function RoutinePlanView({
         <RestTimer />
 
 
-        {/* Barra fija: progreso y tiempo siempre visibles mientras se entrena */}
-        <div className="sticky top-0 z-30 -mx-4 -mt-4 mb-4 border-b border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/90 sm:-mx-6 sm:-mt-6 sm:px-6">
-          <div className="mx-auto flex w-full max-w-4xl items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="truncate text-xs font-bold text-zinc-700 dark:text-zinc-200">
-                  {ejerciciosEntrenamiento.filter((item) => item.completado === true).length} de {ejerciciosEntrenamiento.length} ejercicios
-                </p>
-                <p className="mak-cifra shrink-0 text-lg tabular-nums text-zinc-950 dark:text-white" aria-label="Tiempo de entrenamiento">
-                  {tiempoTranscurrido()}
-                </p>
-              </div>
-              <div
-                className="mt-1.5 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
-                role="progressbar"
-                aria-label="Progreso del entrenamiento"
-                aria-valuemin={0}
-                aria-valuemax={ejerciciosEntrenamiento.length}
-                aria-valuenow={ejerciciosEntrenamiento.filter((item) => item.completado === true).length}
-              >
-                <div
-                  className="h-full rounded-full bg-[#02AFBB] transition-[width] duration-500"
-                  style={{
-                    width: `${ejerciciosEntrenamiento.length
-                      ? (ejerciciosEntrenamiento.filter((item) => item.completado === true).length / ejerciciosEntrenamiento.length) * 100
-                      : 0}%`,
-                  }}
-                />
+        {/* Barra fija: progreso, tiempo y terminar, siempre visibles mientras se entrena */}
+        {(() => {
+          const total = ejerciciosEntrenamiento.length
+          const hechos = ejerciciosEntrenamiento.filter((item) => item.completado === true).length
+          const pct = total ? Math.round((hechos / total) * 100) : 0
+          const listo = total > 0 && hechos === total
+          return (
+            <div className="sticky top-0 z-30 -mx-4 -mt-4 mb-4 bg-[#0D1417] px-4 pb-3 pt-3 text-white shadow-lg sm:-mx-6 sm:-mt-6 sm:px-6">
+              <div className="mx-auto flex w-full max-w-4xl items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <p className="mak-cifra text-2xl">{hechos}<span className="text-base text-zinc-400">/{total}</span></p>
+                    <p className="truncate text-sm font-semibold text-zinc-300">ejercicios · {pct}%</p>
+                  </div>
+                  <div
+                    className="mt-2 h-3 overflow-hidden rounded-full bg-white/15"
+                    role="progressbar"
+                    aria-label="Progreso del entrenamiento"
+                    aria-valuemin={0}
+                    aria-valuemax={total}
+                    aria-valuenow={hechos}
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#02AFBB] to-[#5FE3EA] transition-[width] duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs font-semibold text-zinc-400">Tiempo</p>
+                  <p className="mak-cifra text-xl tabular-nums" aria-label="Tiempo de entrenamiento">{tiempoTranscurrido()}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('mak-finalizar')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  className={`shrink-0 rounded-xl px-3.5 py-2.5 text-sm font-bold ${listo ? 'bg-[#02AFBB] text-[#04232a] animate-pulse' : 'bg-white/10 text-white'}`}
+                >
+                  {listo ? 'Finalizar' : 'Terminar'}
+                </button>
               </div>
             </div>
-          </div>
-        </div>
+          )
+        })()}
 
 
         <div className="mx-auto w-full max-w-4xl">
@@ -752,7 +763,7 @@ export default function RoutinePlanView({
 
             <div className="rounded-2xl bg-zinc-950 px-4 py-3 text-center text-white dark:bg-white dark:text-zinc-950">
 
-              <p className="text-[9px] font-black uppercase tracking-widest opacity-60">
+              <p className="text-xs font-black uppercase tracking-widest opacity-60">
                 Tiempo
               </p>
 
@@ -821,7 +832,7 @@ export default function RoutinePlanView({
 
                       {ejercicio?.es_variante && (
                         <div className="mt-2 space-y-1">
-                          <span className="inline-flex rounded-full bg-cyan-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
+                          <span className="inline-flex rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
                             Variante elegida
                           </span>
 
@@ -858,7 +869,7 @@ export default function RoutinePlanView({
 
                     <div className="rounded-2xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
 
-                      <p className="text-[9px] font-black uppercase tracking-wide text-zinc-400">
+                      <p className="text-xs font-black uppercase tracking-wide text-zinc-400">
                         Series
                       </p>
 
@@ -871,7 +882,7 @@ export default function RoutinePlanView({
 
                     <div className="rounded-2xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
 
-                      <p className="text-[9px] font-black uppercase tracking-wide text-zinc-400">
+                      <p className="text-xs font-black uppercase tracking-wide text-zinc-400">
                         Reps
                       </p>
 
@@ -884,7 +895,7 @@ export default function RoutinePlanView({
 
                     <div className="rounded-2xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
 
-                      <p className="text-[9px] font-black uppercase tracking-wide text-zinc-400">
+                      <p className="text-xs font-black uppercase tracking-wide text-zinc-400">
                         Descanso
                       </p>
 
@@ -936,6 +947,8 @@ export default function RoutinePlanView({
           )}
 
 
+
+          <div id="mak-finalizar" className="scroll-mt-24" />
 
           <WorkoutFinishControl
             entrenamiento={entrenamientoActivo}
@@ -1184,66 +1197,28 @@ export default function RoutinePlanView({
       )}
 
 
-      <div className="mt-5 rounded-2xl bg-cyan-50 p-4 dark:bg-cyan-500/10">
-
-        <div className="flex gap-3">
-
-          <Timer
-            size={21}
-            className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400"
-          />
-
-          <div>
-
-            <p className="font-black text-cyan-950 dark:text-cyan-100">
-              Sesiones de máximo {maxMin} minutos
-            </p>
-
-            <p className="mt-1 text-sm leading-6 text-cyan-900 dark:text-cyan-200">
-              {trabajoMin
-                ? `Hasta ${trabajoMin} min de trabajo principal, más calentamiento y cierre.`
-                : 'La sesión incluye trabajo principal, calentamiento y cierre.'}
-            </p>
-
-          </div>
-
+      <details className="group mt-4 rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+          <Timer size={20} className="shrink-0 text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
+          <span className="flex-1 text-sm font-bold text-zinc-800 dark:text-zinc-100">
+            Máximo {maxMin} min por sesión · consejos del plan
+          </span>
+          <span aria-hidden="true" className="text-lg text-[#02AFBB] transition group-open:rotate-180">⌄</span>
+        </summary>
+        <div className="space-y-3 border-t border-zinc-100 px-4 pb-4 pt-3 text-[15px] leading-6 text-zinc-700 dark:border-white/10 dark:text-zinc-300">
+          <p>
+            {trabajoMin
+              ? `Hasta ${trabajoMin} min de trabajo principal, más calentamiento y cierre.`
+              : 'La sesión incluye trabajo principal, calentamiento y cierre.'}
+          </p>
+          {rutina?.recomendacion_general && (
+            <p><span className="font-bold text-zinc-900 dark:text-white">Cómo progresar: </span>{rutina.recomendacion_general}</p>
+          )}
+          {rutina?.recomendacion_descanso && (
+            <p><span className="font-bold text-zinc-900 dark:text-white">Descanso: </span>{rutina.recomendacion_descanso}</p>
+          )}
         </div>
-
-      </div>
-
-
-      {rutina?.recomendacion_general && (
-
-        <div className="mt-3 rounded-2xl border border-zinc-200 p-4 dark:border-white/10">
-
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-zinc-400">
-            Intensidad segura
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-            {rutina.recomendacion_general}
-          </p>
-
-        </div>
-
-      )}
-
-
-      {rutina?.recomendacion_descanso && (
-
-        <div className="mt-3 rounded-2xl border border-zinc-200 p-4 dark:border-white/10">
-
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-zinc-400">
-            Recuperación semanal
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-            {rutina.recomendacion_descanso}
-          </p>
-
-        </div>
-
-      )}
+      </details>
 
 
       <div aria-label="Días de tu rutina" className="sticky top-0 z-20 -mx-4 mt-4 flex gap-2 overflow-x-auto overscroll-x-contain border-y border-zinc-100 bg-white/95 px-4 py-2.5 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
@@ -1300,7 +1275,7 @@ export default function RoutinePlanView({
 
             <div className="rounded-xl bg-zinc-100 px-3 py-2 text-right dark:bg-white/5">
 
-              <p className="text-[10px] font-black uppercase tracking-wide text-zinc-400">
+              <p className="text-xs font-black uppercase tracking-wide text-zinc-400">
                 Estimado
               </p>
 
@@ -1379,17 +1354,17 @@ export default function RoutinePlanView({
           />
 
 
-          <div className="mt-4 flex items-baseline justify-between gap-3">
-            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+          <div className="mt-5 space-y-1">
+            <p className="mak-display text-xl text-zinc-900 dark:text-white">
               {(dia?.ejercicios || []).length} ejercicios
             </p>
             {zonasCuidado.length > 0 && (
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+              <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
                 Cuidando: {zonasCuidado.map((z) => ZONAS[z]?.nombre.toLowerCase()).join(', ')}
               </p>
             )}
             {(dia?.ejercicios || []).some((x) => x?.superserie) && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Las letras iguales (C1, C2) se hacen en superserie
               </p>
             )}
@@ -1457,7 +1432,7 @@ export default function RoutinePlanView({
                             </span>
                           )}
                           {tieneVariante && (
-                            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[11px] font-bold text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300">
+                            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-xs font-bold text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300">
                               Variante
                             </span>
                           )}
@@ -1743,7 +1718,7 @@ export default function RoutinePlanView({
                             </div>
 
 
-                            <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                            <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                               Equivalencia {variante?.equivalencia || 'alta'}
                             </span>
 
@@ -1753,7 +1728,7 @@ export default function RoutinePlanView({
                           <div className="mt-3 grid grid-cols-3 gap-2">
 
                             <div className="rounded-xl bg-zinc-50 p-2 text-center dark:bg-white/[0.04]">
-                              <p className="text-[9px] font-black uppercase text-zinc-400">
+                              <p className="text-xs font-black uppercase text-zinc-400">
                                 Series
                               </p>
                               <p className="mt-1 text-sm font-black">
@@ -1762,7 +1737,7 @@ export default function RoutinePlanView({
                             </div>
 
                             <div className="rounded-xl bg-zinc-50 p-2 text-center dark:bg-white/[0.04]">
-                              <p className="text-[9px] font-black uppercase text-zinc-400">
+                              <p className="text-xs font-black uppercase text-zinc-400">
                                 Reps
                               </p>
                               <p className="mt-1 text-sm font-black">
@@ -1771,7 +1746,7 @@ export default function RoutinePlanView({
                             </div>
 
                             <div className="rounded-xl bg-zinc-50 p-2 text-center dark:bg-white/[0.04]">
-                              <p className="text-[9px] font-black uppercase text-zinc-400">
+                              <p className="text-xs font-black uppercase text-zinc-400">
                                 Descanso
                               </p>
                               <p className="mt-1 text-sm font-black">

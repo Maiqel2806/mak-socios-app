@@ -1003,11 +1003,11 @@ export default function RoutineCard({
 
   const claseEstado =
     requiereRevision
-      ? 'rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+      ? 'mak-tile-badge mak-tile-badge-alerta'
       : tieneRutina &&
         !requiereRegenerar
-        ? 'rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
-        : 'rounded-full bg-cyan-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300'
+        ? 'mak-tile-badge mak-tile-badge-ok'
+        : 'mak-tile-badge'
 
 
   if (!activo) {
@@ -1030,13 +1030,15 @@ export default function RoutineCard({
       <button
         type="button"
         onClick={abrir}
-        className="mak-interactive group flex min-h-[136px] w-full flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm dark:border-white/10 dark:bg-zinc-900"
+        className="mak-tile mak-tile-rutina group"
       >
+
+        <Dumbbell aria-hidden="true" className="mak-tile-deco" strokeWidth={1.2} />
 
         <div className="flex items-start justify-between gap-3">
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400">
-            <Dumbbell size={23} />
+          <div className="mak-tile-icono">
+            <Dumbbell size={24} />
           </div>
 
 
@@ -1053,11 +1055,11 @@ export default function RoutineCard({
 
         <div>
 
-          <p className="font-black text-zinc-950 dark:text-white">
+          <p className="mak-tile-titulo">
             Mi rutina
           </p>
 
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mak-tile-sub">
             {requiereRevision
               ? 'Revisión del entrenador pendiente'
 

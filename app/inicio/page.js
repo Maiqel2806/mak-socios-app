@@ -216,13 +216,18 @@ export default async function InicioPage() {
 
   const diasMembresia = Number(membresia?.dias_restantes)
 
+  const horaEcuador = Number(
+    new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Guayaquil' }).format(new Date())
+  )
+  const saludoHora = horaEcuador < 12 ? 'Buenos días' : horaEcuador < 19 ? 'Buenas tardes' : 'Buenas noches'
+
   return (
     <main className="mak-home-page min-h-screen bg-zinc-100 pb-24 text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <header className="mak-home-header">
         <div className="mak-home-header-inner">
           <div className="mak-home-welcome">
-            <p className="mak-home-kicker"><span className="mak-home-kicker-dot" />MAK FITNESS <span className="mak-home-kicker-divider">/</span> CLIENTES</p>
-            <h1>¡Hola, {nombreSocio}!</h1>
+            <p className="mak-home-kicker"><span className="mak-home-kicker-dot" />MAK FITNESS</p>
+            <h1>{saludoHora}, {nombreSocio}</h1>
             <p className="mak-home-slogan">Entrenamiento real, para resultados reales.</p>
           </div>
           <div className="mak-home-actions">
@@ -256,7 +261,12 @@ export default async function InicioPage() {
           nombre={nombreSocio}
           activo={accesoBeneficios}
           diasMembresia={Number.isFinite(diasMembresia) ? diasMembresia : null}
-          tienePerfil={Boolean(perfilFisico?.tiene_perfil ?? rutinaInicial?.tiene_perfil)}
+          tienePerfil={Boolean(
+            perfilFisico?.tiene_perfil ||
+            perfilFisico?.objetivo ||
+            rutinaInicial?.tiene_perfil ||
+            rutinaInicial?.tiene_rutina
+          )}
           requiereRevision={Boolean(rutinaInicial?.requiere_revision)}
           proximoDia={proximoDia}
           diasPlan={Number(rutinaInicial?.rutina?.dias_semana || diasRutina.length) || null}

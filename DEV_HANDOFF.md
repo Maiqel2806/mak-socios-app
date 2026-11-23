@@ -122,3 +122,12 @@ UI:
 - Rutina: aviso "Cuida tu …" y botón de alternativa segura en ejercicios que cargan la zona; motor v4 excluye esos ejercicios.
 - Ejecución: ya no se muestran imágenes en las tarjetas; botón "Ver ejecución" abre la demostración a pantalla completa por encima de todo (antes el visor quedaba detrás del modal).
 - Entrenamiento: barra fija arriba con progreso y tiempo.
+
+## Cambios 2026-11-23 (4): inicio para celular y barra de entrenamiento
+
+- Accesos del inicio rediseñados (`.mak-tile*` en globals.css): tarjetas con color por sección, ícono grande, título de 22 px y texto de 14 px como mínimo.
+- Encabezado con saludo según la hora de Ecuador; código de ingreso compacto en una fila.
+- Corregido: el panel "Hoy" mostraba "Crea tu rutina" aunque el socio ya tenía una.
+- Entrenamiento: barra fija oscura con ejercicios hechos, porcentaje, tiempo y botón Terminar/Finalizar (lleva al cierre).
+- Corregido: el botón Finalizar seguía exigiendo pesos múltiplos de 2,5 kg en la app.
+- Consejos del plan agrupados en un desplegable para llegar antes a los días; tamaños de letra mínimos de 12 px en toda la app.
