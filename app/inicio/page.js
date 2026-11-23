@@ -25,7 +25,7 @@ import ProgressEntryCard from '@/components/ProgressEntryCard'
 import RoutineCard from '@/components/RoutineCard'
 import MemberAccessCodeCard from '@/components/MemberAccessCodeCard'
 import AppWelcomeGuide from '@/components/AppWelcomeGuide'
-import { esAdministrador, estadoConRutinaV4 } from '@/lib/rutinas/servidor'
+import { esAdministrador, estadoConRutinaV4, estadoDesdeTablas, motorV4Activo } from '@/lib/rutinas/servidor'
 import { cargarHistorialSocio } from '@/lib/historial'
 import HomeHoy from '@/components/HomeHoy'
 
@@ -190,6 +190,11 @@ export default async function InicioPage() {
           respuestaRutina.data,
           cuenta.miembro_id
         )
+    } else if (motorV4Activo()) {
+      rutinaInicial =
+        await estadoDesdeTablas(
+          cuenta.miembro_id
+        ).catch(() => null)
     }
   }
 

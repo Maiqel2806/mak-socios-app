@@ -7,20 +7,15 @@ import {
 } from '@/lib/supabase/server'
 
 import {
-  createAdminClient,
-} from '@/lib/supabase/admin'
+  prepararRutinaV4,
+  guardarRutinaV4,
+} from '@/lib/rutinas/generacion'
 
 import {
-  VERSION_MOTOR,
-  generarRutina,
-} from '@/lib/rutinas/motor'
-
-import {
-  cargarEquipamiento,
-  cargarPersonalizados,
   miembroDelUsuario,
   motorV4Activo,
   estadoConRutinaV4,
+  estadoDesdeTablas,
 } from '@/lib/rutinas/servidor'
 
 
@@ -153,10 +148,23 @@ export async function GET() {
 
 
   if (error) {
+    const mensaje = String(error.message || '')
+    const esDeAcceso =
+      mensaje.includes('MEMBRESIA') ||
+      mensaje.includes('AUTENTIC') ||
+      mensaje.includes('CUENTA')
+
+    if (motorV4Activo() && !esDeAcceso) {
+      console.error('OBTENER RUTINA (SQL) FALLÓ, USANDO TABLAS:', error)
+      const miembroId = await miembroDelUsuario(supabase, userId)
+      const estado = await estadoDesdeTablas(miembroId).catch(() => null)
+      if (estado) {
+        return NextResponse.json({ ok: true, motor: 'v4', estado })
+      }
+    }
+
     return errorRpc(
-      String(
-        error.message || ''
-      ),
+      mensaje,
       'No pudimos cargar tu rutina.'
     )
   }
@@ -180,199 +188,55 @@ async function generarRutinaV4(
   supabase,
   userId
 ) {
-  const {
-    data: estado,
-    error,
-  } =
-    await supabase.rpc(
-      'obtener_mi_rutina_app'
-    )
+  try {
+    const preparada =
+      await prepararRutinaV4(supabase, userId)
 
-  if (error) {
-    return errorRpc(
-      String(
-        error.message || ''
-      ),
-      'No pudimos generar tu rutina.'
-    )
-  }
-
-  if (
-    !estado?.tiene_perfil ||
-    !estado?.perfil
-  ) {
-    return errorJson(
-      'Completa primero tu perfil físico.',
-      409
-    )
-  }
-
-  if (
-    estado?.requiere_revision === true &&
-    estado?.puede_generar === false
-  ) {
-    return NextResponse.json(
-      {
-        ok: false,
-        requiere_revision: true,
-        message:
-          estado?.message ||
-          'Tus limitaciones físicas están en revisión por el equipo MAK.',
-      },
-      {
-        status: 409,
+    if (!preparada.ok) {
+      if (preparada.rpcMensaje) {
+        return errorRpc(preparada.rpcMensaje, preparada.error)
       }
-    )
-  }
-
-  const miembroId =
-    await miembroDelUsuario(
-      supabase,
-      userId
-    )
-
-  if (!miembroId) {
-    return errorJson(
-      'Tu sesión ya no es válida. Inicia sesión nuevamente.',
-      401
-    )
-  }
-
-  const admin =
-    createAdminClient()
-
-  // Perfil completo directamente de la tabla (incluye observaciones,
-  // precauciones y objetivo secundario)
-  const {
-    data: perfilTabla,
-  } = await admin
-    .from('socio_perfiles_fisicos')
-    .select('*')
-    .eq('miembro_id', miembroId)
-    .maybeSingle()
-
-  const perfil = {
-    ...(estado.perfil || {}),
-    ...(perfilTabla || {}),
-  }
-
-  // Edad desde la fecha de nacimiento del socio si el perfil no la tiene
-  if (!Number(perfil.edad)) {
-    const { data: miembro } = await admin
-      .from('miembros')
-      .select('fecha_nacimiento')
-      .eq('id', miembroId)
-      .maybeSingle()
-
-    if (miembro?.fecha_nacimiento) {
-      const nacimiento = new Date(miembro.fecha_nacimiento)
-      const hoy = new Date()
-      let edad = hoy.getFullYear() - nacimiento.getFullYear()
-      const m = hoy.getMonth() - nacimiento.getMonth()
-      if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--
-      if (edad > 4 && edad < 110) perfil.edad = edad
+      if (preparada.requiere_revision) {
+        return NextResponse.json(
+          {
+            ok: false,
+            requiere_revision: true,
+            message: preparada.error,
+          },
+          { status: 409 }
+        )
+      }
+      console.error('RUTINA V4', preparada.paso, preparada.detalle)
+      return errorJson(preparada.error, preparada.status || 500, {
+        paso: preparada.paso,
+        detalle: preparada.detalle || null,
+      })
     }
-  }
 
-  // Popularidad de ejercicios en las rutinas activas de otros socios:
-  // el motor la usa para repartir y evitar que todos tengan lo mismo
-  const {
-    data: activas,
-  } = await admin
-    .from('socio_rutinas_generadas')
-    .select('rutina_json')
-    .eq('activa', true)
-    .eq('motor_version', VERSION_MOTOR)
-    .neq('miembro_id', miembroId)
-    .order('fecha_registro', { ascending: false })
-    .limit(80)
+    const guardado =
+      await guardarRutinaV4(preparada.admin, preparada)
 
-  const popularidad = {}
-  for (const fila of activas || []) {
-    const vistos = new Set()
-    for (const dia of fila?.rutina_json?.dias || []) {
-      for (const ej of dia?.ejercicios || []) {
-        if (ej?.codigo && !vistos.has(ej.codigo)) {
-          vistos.add(ej.codigo)
-          popularidad[ej.codigo] = (popularidad[ej.codigo] || 0) + 1
-        }
-      }
+    if (!guardado.ok) {
+      console.error('GUARDAR RUTINA V4', guardado.paso, guardado.errores)
+      return errorJson('No pudimos guardar tu rutina.', 500, {
+        paso: guardado.paso,
+        detalle: guardado.errores.join(' || ').slice(0, 900),
+      })
     }
-  }
 
-  const [
-    equipamiento,
-    personalizados,
-  ] = await Promise.all([
-    cargarEquipamiento(),
-    cargarPersonalizados(),
-  ])
-
-  const rutina =
-    generarRutina(
-      perfil,
-      {
-        equipamiento,
-        personalizados,
-        popularidad,
-        semilla:
-          `${miembroId}-${Date.now()}`,
-      }
-    )
-
-  // Conserva el historial: la rutina anterior queda inactiva, no se borra
-  const {
-    error: errorDesactivar,
-  } = await admin
-    .from('socio_rutinas_generadas')
-    .update({
-      activa: false,
+    return NextResponse.json({
+      ok: true,
+      motor: preparada.rutina.motor,
+      rutina_id: guardado.id,
+      total_ejercicios: preparada.rutina.total_ejercicios,
     })
-    .eq('miembro_id', miembroId)
-    .eq('activa', true)
-
-  if (errorDesactivar) {
-    console.error('DESACTIVAR RUTINA V4:', errorDesactivar)
-    return errorJson('No pudimos guardar tu rutina.', 500)
-  }
-
-  const {
-    error: errorGuardar,
-  } = await admin
-    .from('socio_rutinas_generadas')
-    .insert({
-      miembro_id: miembroId,
-      objetivo: perfil.objetivo,
-      nivel: perfil.nivel,
-      dias_semana: rutina.dias_semana,
-      tiempo_sesion_min: rutina.tiempo_maximo_sesion_min,
-      limitaciones: perfil.limitaciones || null,
-      rutina_json: rutina,
-      activa: true,
-      perfil_fecha_actualizacion:
-        perfil.fecha_actualizacion || new Date().toISOString(),
-      motor_version: rutina.motor,
-      origen: 'app_motor_v4',
+  } catch (e) {
+    console.error('RUTINA V4 EXCEPCION', e)
+    return errorJson('No pudimos crear tu rutina.', 500, {
+      paso: 'excepcion',
+      detalle: String(e?.message || e).slice(0, 400),
     })
-
-  if (errorGuardar) {
-    console.error(
-      'GUARDAR RUTINA V4:',
-      errorGuardar
-    )
-
-    return errorJson(
-      'No pudimos guardar tu rutina.',
-      500
-    )
   }
-
-  return NextResponse.json({
-    ok: true,
-    motor: rutina.motor,
-    total_ejercicios:
-      rutina.total_ejercicios,
-  })
 }
 
 

@@ -25,6 +25,7 @@ import {
 } from 'react'
 
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
+import AvisoFlotante from '@/components/AvisoFlotante'
 import RoutinePlanView from '@/components/RoutinePlanView'
 import { aNumero, limpiarDecimal } from '@/lib/numeros'
 import PrecaucionesSalud from '@/components/PrecaucionesSalud'
@@ -212,6 +213,11 @@ export default function RoutineCard({
   ] = useState(
     rutinaBase
   )
+
+  const [
+    errorRutina,
+    setErrorRutina,
+  ] = useState(null)
 
   const [
     procesandoRutina,
@@ -705,11 +711,17 @@ export default function RoutineCard({
         }
 
 
-        throw new Error(
+        const fallo = new Error(
           resultado?.error ||
           resultado?.message ||
           'No pudimos generar tu rutina.'
         )
+        fallo.detalle = [
+          resultado?.paso && `Paso: ${resultado.paso}`,
+          resultado?.detalle,
+          `HTTP ${respuesta.status}`,
+        ].filter(Boolean).join(' · ')
+        throw fallo
       }
 
 
@@ -717,12 +729,25 @@ export default function RoutineCard({
         mostrar: true,
       })
 
+      setErrorRutina(null)
+
 
     } catch (err) {
       setError(
         err?.message ||
         'No pudimos generar tu rutina.'
       )
+
+      setErrorRutina({
+        mensaje:
+          err?.message ||
+          'No pudimos generar tu rutina.',
+        detalle:
+          err?.detalle ||
+          (err instanceof SyntaxError
+            ? 'El servidor no respondió con datos válidos (posible error interno o tiempo agotado).'
+            : String(err?.message || '')),
+      })
 
     } finally {
       setProcesandoRutina(
@@ -1045,6 +1070,12 @@ export default function RoutineCard({
 
   return (
     <>
+      <AvisoFlotante
+        mensaje={errorRutina?.mensaje}
+        detalle={errorRutina?.detalle}
+        onCerrar={() => setErrorRutina(null)}
+      />
+
       {(procesandoRutina || guardando) && (
         <MakCargando
           pantallaCompleta
