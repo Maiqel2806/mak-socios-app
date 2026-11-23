@@ -24,6 +24,8 @@ import ExerciseDemo from './ExerciseDemo'
 
 import RestTimer from './RestTimer'
 
+import MakCargando from './MakCargando'
+
 import { imagenesDeEjercicio } from '@/lib/rutinas/medios'
 
 import { ZONAS, zonaEnRiesgo } from '@/lib/precauciones'
@@ -983,6 +985,15 @@ export default function RoutinePlanView({
   return (
     <div className="mak-view-enter mx-auto w-full max-w-4xl p-4 pb-8 sm:p-6 lg:p-8">
 
+      {iniciandoEntrenamiento && (
+        <MakCargando
+          pantallaCompleta
+          portal
+          mensaje="¡A entrenar!"
+          submensaje="Preparando tu sesión de hoy."
+        />
+      )}
+
       {avisoRepeticion &&
         typeof document !== 'undefined' &&
         createPortal(
@@ -1640,8 +1651,8 @@ export default function RoutinePlanView({
 
             {cargandoVariantes && (
 
-              <div className="py-10 text-center text-sm font-bold text-zinc-500">
-                Buscando alternativas...
+              <div className="flex justify-center py-8 text-zinc-800 dark:text-white">
+                <MakCargando compacto mensaje="Buscando alternativas…" />
               </div>
 
             )}

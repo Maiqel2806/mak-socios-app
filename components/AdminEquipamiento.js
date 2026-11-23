@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, Dumbbell, Eye, Loader2, Plus, Sparkles } from 'lucide-react'
 
 import ExerciseDemo from './ExerciseDemo'
+import MakCargando from './MakCargando'
 
 const NIVELES = [
   ['principiante', 'Principiante'],
@@ -104,8 +105,8 @@ export default function AdminEquipamiento() {
 
   if (!datos && !error) {
     return (
-      <div className="mt-8 flex items-center gap-2 text-sm font-bold text-zinc-500">
-        <Loader2 className="animate-spin" size={18} /> Cargando equipamiento…
+      <div className="mt-10 flex justify-center text-zinc-800 dark:text-white">
+        <MakCargando compacto mensaje="Cargando equipamiento…" />
       </div>
     )
   }

@@ -15,6 +15,7 @@ import {
   UserRound,
 } from 'lucide-react'
 
+import MakCargando from '@/components/MakCargando'
 import ThemeToggle from '@/components/ThemeToggle'
 
 export default function LoginPage() {
@@ -257,22 +258,11 @@ export default function LoginPage() {
       </div>
 
       {cargando && (
-        <div className="mak-auth-overlay"
-             role="status"
-             aria-live="polite"
-             aria-label="Validando tu acceso">
-          <div className="mak-auth-panel">
-            <div className="mak-auth-spinner" aria-hidden="true">
-              <div className="mak-auth-logo" />
-            </div>
-            <p className="mak-auth-brand">MAK CLIENTES</p>
-            <h2>Estamos preparando tu espacio</h2>
-            <p>Verificando tus datos de acceso...</p>
-            <div className="mak-auth-dots" aria-hidden="true">
-              <span/><span/><span/>
-            </div>
-          </div>
-        </div>
+        <MakCargando
+          pantallaCompleta
+          mensaje="Preparando tu espacio…"
+          submensaje="Verificando tus datos de acceso."
+        />
       )}
     </main>
   )

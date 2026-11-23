@@ -28,6 +28,7 @@ import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import RoutinePlanView from '@/components/RoutinePlanView'
 import { aNumero, limpiarDecimal } from '@/lib/numeros'
 import PrecaucionesSalud from '@/components/PrecaucionesSalud'
+import MakCargando from '@/components/MakCargando'
 import GuiaRevisionSalud from '@/components/GuiaRevisionSalud'
 import { zonasDelPerfil } from '@/lib/precauciones'
 
@@ -1027,6 +1028,17 @@ export default function RoutineCard({
 
   return (
     <>
+      {(procesandoRutina || guardando) && (
+        <MakCargando
+          pantallaCompleta
+          portal
+          mensaje={procesandoRutina ? 'Armando tu rutina…' : 'Guardando tu perfil…'}
+          submensaje={procesandoRutina
+            ? 'Elegimos tus ejercicios según tu objetivo, tu nivel y las máquinas del gimnasio.'
+            : 'Un momento, ya casi.'}
+        />
+      )}
+
       <button
         type="button"
         onClick={abrir}

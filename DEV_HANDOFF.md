@@ -138,3 +138,9 @@ UI:
 - El tipo se detecta por el equipamiento del ejercicio; el salto de placas usa `incremento_kg` (por defecto 2,5 kg).
 - Repeticiones con botones − / +.
 - `RestTimer` se dibuja en `document.body` (portal): la animación de la ventana de rutina rompía `position: fixed` y el descanso solo se veía al final de la página.
+
+## Cambios 2026-11-23 (6): pantallas de carga con muñequitos
+
+- `components/MakCargando.js` + estilos `.mk-*` en globals.css: figuras originales (SVG + CSS) haciendo dominadas, flexiones, abdominales, sentadillas (sprite de 3 cuadros) y jumping jacks; rotan cada 3,6 s con frases ("Ajustando el pin…").
+- Usado en: login, `app/loading.js` (entre pantallas), guardar perfil y generar rutina, iniciar entrenamiento, búsqueda de alternativas y panel de equipamiento.
+- `portal` para mostrarlo encima de ventanas con animación; respeta "reducir movimiento".

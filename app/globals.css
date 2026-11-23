@@ -1661,3 +1661,112 @@ html.dark .mak-hoy { box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); }
   .mak-disco { animation: mak-disco-entra 180ms ease-out; }
   @keyframes mak-disco-entra { from { scale: 1 .6; opacity: .5; } }
 }
+
+
+/* ==========================================================
+   MAK_CARGANDO · muñequitos entrenando mientras carga
+   ========================================================== */
+
+.mk-cargando-pantalla {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #fff;
+  background:
+    radial-gradient(70% 50% at 50% 35%, rgba(2, 175, 187, 0.22), transparent 70%),
+    linear-gradient(160deg, #0d1417 0%, #12262c 100%);
+  animation: mk-aparece 220ms ease-out both;
+}
+
+.mk-cargando {
+  --mk-acento: #02afbb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.mk-escena { position: relative; width: 168px; height: 168px; }
+.mk-cargando-compacto .mk-escena { width: 84px; height: 84px; }
+
+.mk-figura { width: 100%; height: 100%; overflow: visible; }
+.mk-figura * { transform-box: view-box; }
+
+.mk-sombra {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 70%;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(2, 175, 187, 0.35), transparent);
+  transform: translateX(-50%);
+}
+
+.mk-entrada { width: 100%; height: 100%; animation: mk-aparece 260ms ease-out both; }
+
+.mk-etiqueta {
+  margin-top: 6px;
+  font-family: var(--font-display), var(--font-sans-fallback);
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mk-mensaje { margin-top: 8px; font-size: 1rem; font-weight: 600; opacity: 0.9; }
+.mk-cargando-compacto .mk-mensaje { margin-top: 2px; font-size: 0.875rem; }
+.mk-submensaje { margin-top: 4px; max-width: 32ch; font-size: 0.875rem; opacity: 0.7; }
+
+.mk-puntos { display: flex; gap: 6px; margin-top: 14px; }
+.mk-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--mk-acento); animation: mk-punto 900ms ease-in-out infinite; }
+.mk-puntos span:nth-child(2) { animation-delay: 150ms; }
+.mk-puntos span:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes mk-aparece { from { opacity: 0; transform: scale(0.96); } }
+@keyframes mk-punto { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-4px); } }
+
+/* --- Dominadas: el cuerpo sube y los brazos se acortan desde la barra */
+.mk-dom-cuerpo { animation: mk-dom-cuerpo 1.2s ease-in-out infinite alternate; }
+.mk-dom-brazo  { transform-origin: 60px 18px; animation: mk-dom-brazo 1.2s ease-in-out infinite alternate; }
+@keyframes mk-dom-cuerpo { from { transform: translateY(0); } to { transform: translateY(-16px); } }
+@keyframes mk-dom-brazo  { from { transform: scaleY(1); } to { transform: scaleY(0.5); } }
+
+/* --- Flexiones: el cuerpo gira sobre los pies y el brazo se flexiona */
+.mk-flex-cuerpo { transform-origin: 100px 101px; animation: mk-flex-cuerpo 1s ease-in-out infinite alternate; }
+.mk-flex-brazo  { transform-origin: 40px 104px; animation: mk-flex-brazo 1s ease-in-out infinite alternate; }
+@keyframes mk-flex-cuerpo { from { transform: rotate(0deg); } to { transform: rotate(-9deg); } }
+@keyframes mk-flex-brazo  { from { transform: scaleY(1); } to { transform: scaleY(0.55); } }
+
+/* --- Abdominales: el tronco sube girando sobre la cadera */
+.mk-abd-torso { transform-origin: 54px 101px; animation: mk-abd 1.1s ease-in-out infinite alternate; }
+@keyframes mk-abd { from { transform: rotate(-78deg); } to { transform: rotate(6deg); } }
+
+/* --- Sentadillas: 3 cuadros (de pie → media → abajo → media) */
+.mk-sent-a, .mk-sent-b, .mk-sent-c { opacity: 0; animation: 1.4s step-end infinite; }
+.mk-sent-a { animation-name: mk-sent-a; }
+.mk-sent-b { animation-name: mk-sent-b; }
+.mk-sent-c { animation-name: mk-sent-c; }
+@keyframes mk-sent-a { 0% { opacity: 1; } 25% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes mk-sent-b { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes mk-sent-c { 0% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } 100% { opacity: 0; } }
+
+/* --- Jumping jacks: brazos arriba, piernas abiertas y pequeño salto */
+.mk-salto-cuerpo    { animation: mk-salto 0.7s ease-in-out infinite alternate; }
+.mk-salto-pierna-i  { transform-origin: 60px 76px; animation: mk-pierna-i 0.7s ease-in-out infinite alternate; }
+.mk-salto-pierna-d  { transform-origin: 60px 76px; animation: mk-pierna-d 0.7s ease-in-out infinite alternate; }
+.mk-salto-brazo-i   { transform-origin: 60px 54px; animation: mk-brazo-i 0.7s ease-in-out infinite alternate; }
+.mk-salto-brazo-d   { transform-origin: 60px 54px; animation: mk-brazo-d 0.7s ease-in-out infinite alternate; }
+@keyframes mk-salto    { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+@keyframes mk-pierna-i { from { transform: rotate(0deg); } to { transform: rotate(16deg); } }
+@keyframes mk-pierna-d { from { transform: rotate(0deg); } to { transform: rotate(-16deg); } }
+@keyframes mk-brazo-i  { from { transform: rotate(0deg); } to { transform: rotate(118deg); } }
+@keyframes mk-brazo-d  { from { transform: rotate(0deg); } to { transform: rotate(-118deg); } }
+
+/* Sin animaciones si el usuario lo prefiere: se ve la pose fija */
+@media (prefers-reduced-motion: reduce) {
+  .mk-figura *, .mk-puntos span, .mk-entrada, .mk-cargando-pantalla { animation: none !important; }
+  .mk-sent-a { opacity: 1; }
+}
