@@ -103,3 +103,13 @@ UI:
 `supabase/migrations/20261123_motor_rutinas_v4.sql`
 - Parte 1 (segura): tablas nuevas + catálogo inicial. Revisar equipos con `activo = false`.
 - Parte 2 (pendiente): ajustar `guardar_mi_serie_entrenamiento_app` (2,5 kg), `iniciar_mi_entrenamiento_con_variantes_app` (leer rutina v4) y tipo de estatura. Requiere la definición actual de esas funciones.
+
+## Cambios 2026-11-23 (2): app competitiva y responsive
+
+- Entrenamiento: temporizador de descanso automático (vibración + sonido, ±15 s, saltar), pantalla siempre encendida (Wake Lock), "Última vez" por ejercicio, peso sugerido por doble progresión (`lib/progresion.js`), aviso de récord personal y barra de progreso de la sesión.
+- API nueva: `POST /api/entrenamiento/historial` (solo lectura).
+- Progreso: racha de semanas, total de entrenamientos, volumen de 8 semanas, récords personales (1RM estimado) y últimos entrenamientos (`lib/historial.js`).
+- Login rediseñado: dos columnas en PC/TV, tarjeta en móvil, aviso de Bloq Mayús.
+- PWA instalable: `app/manifest.js`, iconos `public/icono-*.png`, `app/apple-icon.png`.
+- Responsive: 4 accesos por fila en PC, escalado automático en pantallas ≥1700 px (TV), foco visible para control remoto, áreas seguras del iPhone en modo instalado.
+- SQL: `supabase/migrations/20261123_pesos_libres_series.sql` (cualquier peso al registrar series).

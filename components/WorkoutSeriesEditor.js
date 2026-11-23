@@ -17,6 +17,17 @@ import {
   redondear,
 } from '@/lib/numeros'
 
+import {
+  resumenSeries,
+  sugerirCarga,
+  unoRM,
+} from '@/lib/progresion'
+
+import {
+  avisarDescanso,
+  avisarRecord,
+} from './RestTimer'
+
 // Cualquier peso es válido (máquinas en múltiplos de 2,5 kg, 3 kg,
 // mancuernas de 1 kg, etc.). El incremento solo se usa para los
 // botones + / − y puede venir definido por ejercicio/máquina.
@@ -91,6 +102,7 @@ export default function WorkoutSeriesEditor({
   abiertoInicial = false,
   onGuardado,
   onEdicionPendiente,
+  historial = null,
 }) {
   const total = Number(ejercicio?.series_objetivo)
 
@@ -101,6 +113,19 @@ export default function WorkoutSeriesEditor({
 
   const actividad = esActividadPorTiempo(ejercicio)
   const incremento = incrementoDe(ejercicio)
+
+  const sugerencia = actividad
+    ? null
+    : sugerirCarga({
+        ultimaSesion: historial?.ultima,
+        repeticionesObjetivo: ejercicio?.repeticiones_objetivo,
+        incremento,
+      })
+
+  const pesoSugerido =
+    sugerencia && sugerencia.peso !== null && sugerencia.peso !== undefined
+      ? String(sugerencia.peso).replace('.', ',')
+      : ''
 
   const [filas, setFilas] = useState(() =>
     inicializarFilas(ejercicio, cantidadValida ? total : 0)
@@ -244,6 +269,23 @@ export default function WorkoutSeriesEditor({
         )
       )
 
+      // Descanso automático y detección de récord personal
+      if (completar && data.serie.completada) {
+        const nombre = ejercicio?.nombre_realizado || ''
+        const esUltima = fila.numero === total
+        if (!esUltima) avisarDescanso(ejercicio?.descanso_seg, nombre)
+
+        const e1rm = unoRM(data.serie.peso_kg, data.serie.repeticiones)
+        if (
+          historial?.sesiones > 0 &&
+          e1rm > (Number(historial?.mejor_e1rm) || 0) + 0.01 &&
+          !historial.__recordAvisado
+        ) {
+          historial.__recordAvisado = true
+          avisarRecord({ ejercicio: nombre, peso: data.serie.peso_kg, reps: data.serie.repeticiones })
+        }
+      }
+
       if (typeof onGuardado === 'function') {
         await onGuardado()
       }
@@ -317,11 +359,30 @@ export default function WorkoutSeriesEditor({
 
           {cantidadValida && (
             <>
-              <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-                {actividad
-                  ? 'Marca la actividad cuando la hayas realizado. No se registran tiempos individuales.'
-                  : 'Introduce el peso realmente utilizado y las repeticiones de cada serie. Puedes escribir cualquier peso (ej. 21, 22,5 o 24 kg).'}
-              </p>
+              {!actividad && historial?.ultima ? (
+                <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-xs leading-5 text-cyan-950 dark:border-cyan-500/20 dark:bg-cyan-500/[0.07] dark:text-cyan-100">
+                  <p>
+                    <span className="font-bold">Última vez:</span> {resumenSeries(historial.ultima.series)}
+                    {historial.mejor_peso > 0 && (
+                      <span className="text-cyan-800/70 dark:text-cyan-200/70"> · Mejor: {String(historial.mejor_peso).replace('.', ',')} kg</span>
+                    )}
+                  </p>
+                  {sugerencia && (
+                    <p className="mt-1">
+                      <span className="font-bold">
+                        {sugerencia.tipo === 'subir' ? '↑ ' : sugerencia.tipo === 'bajar' ? '↓ ' : ''}Hoy: {pesoSugerido} kg.
+                      </span>{' '}
+                      {sugerencia.motivo}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  {actividad
+                    ? 'Marca la actividad cuando la hayas realizado.'
+                    : 'Anota el peso que usaste y tus repeticiones. Puedes escribir cualquier peso (ej. 21, 22,5 o 24 kg). Al completar una serie empieza el descanso.'}
+                </p>
+              )}
 
               {filas.map((fila) => (
                 <div
@@ -372,7 +433,7 @@ export default function WorkoutSeriesEditor({
                             type="text"
                             inputMode="decimal"
                             autoComplete="off"
-                            placeholder="0"
+                            placeholder={pesoSugerido || '0'}
                             value={fila.peso}
                             disabled={guardando !== null}
                             onChange={(e) =>
@@ -413,6 +474,21 @@ export default function WorkoutSeriesEditor({
 
                     </div>
                   )}
+
+                  {!actividad &&
+                    pesoSugerido &&
+                    !fila.completada &&
+                    !fila.peso &&
+                    !(fila.numero > 1 && (filas[fila.numero - 2]?.peso || filas[fila.numero - 2]?.reps)) && (
+                      <button
+                        type="button"
+                        disabled={guardando !== null}
+                        onClick={() => cambiar(fila.numero, 'peso', pesoSugerido)}
+                        className="mak-interactive mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#028894] hover:bg-cyan-50 disabled:opacity-50 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+                      >
+                        Usar peso sugerido ({pesoSugerido} kg)
+                      </button>
+                    )}
 
                   {!actividad &&
                     fila.numero > 1 &&

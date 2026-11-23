@@ -22,6 +22,8 @@ import WorkoutSeriesEditor from './WorkoutSeriesEditor'
 
 import ExerciseDemo from './ExerciseDemo'
 
+import RestTimer from './RestTimer'
+
 import { imagenesDeEjercicio } from '@/lib/rutinas/medios'
 
 import WorkoutFinishControl from './WorkoutFinishControl'
@@ -321,6 +323,47 @@ export default function RoutinePlanView({
     ahora,
     setAhora,
   ] = useState(Date.now())
+
+  // Historial por ejercicio (última vez, mejor marca) para el entrenamiento en curso
+  const [
+    historialEjercicios,
+    setHistorialEjercicios,
+  ] = useState({})
+
+  const idEntrenamientoActual =
+    entrenamientoActivo?.id ||
+    entrenamientoActivo?.entrenamiento_id ||
+    entrenamientoActivo?.fecha_inicio ||
+    null
+
+  useEffect(() => {
+    if (!modoEntrenamiento || !idEntrenamientoActual) return
+
+    const nombres = (entrenamientoActivo?.ejercicios || [])
+      .map((x) => x?.nombre_realizado)
+      .filter(Boolean)
+
+    if (!nombres.length) return
+
+    let cancelado = false
+
+    fetch('/api/entrenamiento/historial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombres }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelado && d?.ok) setHistorialEjercicios(d.historial || {})
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelado = true
+    }
+    // Solo al entrar al modo entrenamiento o cambiar de sesión
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modoEntrenamiento, idEntrenamientoActual])
 
 
   async function cargarEntrenamiento() {
@@ -628,7 +671,9 @@ export default function RoutinePlanView({
 
     return (
 
-      <div className="mak-view-enter min-h-full bg-zinc-50 p-4 pb-8 sm:p-6 dark:bg-zinc-950">
+      <div className="mak-view-enter min-h-full bg-zinc-50 p-4 pb-32 sm:p-6 sm:pb-32 dark:bg-zinc-950">
+
+        <RestTimer />
 
 
         <div className="mx-auto w-full max-w-4xl">
@@ -672,7 +717,7 @@ export default function RoutinePlanView({
                 Tiempo
               </p>
 
-              <p className="mt-1 font-mono text-lg font-black">
+              <p className="mak-cifra mt-1 text-2xl tabular-nums">
                 {tiempoTranscurrido()}
               </p>
 
@@ -686,7 +731,7 @@ export default function RoutinePlanView({
 
             <div className="flex items-center justify-between gap-3">
 
-              <div>
+              <div className="min-w-0 flex-1">
 
                 <p className="text-sm font-black text-zinc-950 dark:text-white">
                   Tu entrenamiento
@@ -695,6 +740,24 @@ export default function RoutinePlanView({
                 <p className="mt-1 text-xs text-zinc-500">
                   {ejerciciosEntrenamiento.filter((item) => item.completado === true).length} de {ejerciciosEntrenamiento.length} ejercicios completados
                 </p>
+
+                <div
+                  className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10"
+                  role="progressbar"
+                  aria-label="Progreso del entrenamiento"
+                  aria-valuemin={0}
+                  aria-valuemax={ejerciciosEntrenamiento.length}
+                  aria-valuenow={ejerciciosEntrenamiento.filter((item) => item.completado === true).length}
+                >
+                  <div
+                    className="h-full rounded-full bg-[#02AFBB] transition-[width] duration-500"
+                    style={{
+                      width: `${ejerciciosEntrenamiento.length
+                        ? (ejerciciosEntrenamiento.filter((item) => item.completado === true).length / ejerciciosEntrenamiento.length) * 100
+                        : 0}%`,
+                    }}
+                  />
+                </div>
 
               </div>
 
@@ -828,6 +891,11 @@ export default function RoutinePlanView({
                   <WorkoutSeriesEditor
                     ejercicio={ejercicio}
                     abiertoInicial={indice === 0}
+                    historial={
+                      historialEjercicios[
+                        String(ejercicio?.nombre_realizado || '').trim().toLowerCase()
+                      ] || null
+                    }
                     onGuardado={cargarEntrenamiento}
                   />
 

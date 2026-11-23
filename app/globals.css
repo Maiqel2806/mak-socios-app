@@ -1409,3 +1409,98 @@ html.dark .mak-bloque-letra { background: var(--mak-cian); color: #04232a; }
   outline: 2px solid var(--mak-cian);
   outline-offset: 2px;
 }
+
+
+/* ==========================================================
+   MAK_RESPONSIVE_V2 · móvil → tablet → PC → TV
+   ========================================================== */
+
+.mak-acceso {
+  background: #f3f6f7;
+}
+
+html.dark .mak-acceso { background: #0a1013; }
+
+.mak-acceso-hero {
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(2, 175, 187, 0.35), transparent 60%),
+    radial-gradient(60% 50% at 0% 100%, rgba(95, 227, 234, 0.12), transparent 70%),
+    linear-gradient(160deg, #0d1417 0%, #13252b 100%);
+}
+
+.mak-acceso-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto -120px -160px auto;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  border: 1px solid rgba(95, 227, 234, 0.18);
+  box-shadow: 0 0 0 60px rgba(2, 175, 187, 0.04), 0 0 0 130px rgba(2, 175, 187, 0.03);
+  pointer-events: none;
+}
+
+/* Áreas seguras (iPhone con notch) cuando la app está instalada */
+@media (display-mode: standalone) {
+  .mak-home-header-inner { padding-top: calc(env(safe-area-inset-top) + 20px); }
+  .mak-topbar { padding-top: env(safe-area-inset-top); }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .mak-home-grid { gap: 16px; }
+}
+
+/* PC: 4 accesos en una fila y contenido más ancho */
+@media (min-width: 1024px) {
+  .mak-home-header-inner,
+  .mak-home-body { max-width: 1180px; }
+  .mak-home-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mak-home-grid > * > button,
+  .mak-home-grid > * > a,
+  .mak-home-grid > button,
+  .mak-home-grid > a { min-height: 180px; }
+}
+
+/* Pantallas grandes y TV: todo escala de forma proporcional.
+   Tailwind usa rem, así que basta con subir la base. */
+@media (min-width: 1700px) {
+  html { font-size: 18px; }
+  .mak-home-header-inner,
+  .mak-home-body { max-width: 1400px; }
+  .mak-home-welcome h1 { font-size: 52px; }
+  .mak-home-kicker, .mak-home-slogan { font-size: 15px; }
+}
+
+@media (min-width: 2300px) {
+  html { font-size: 24px; }
+  .mak-home-header-inner,
+  .mak-home-body { max-width: 1900px; }
+  .mak-home-welcome h1 { font-size: 72px; }
+  .mak-home-kicker, .mak-home-slogan { font-size: 20px; }
+}
+
+@media (min-width: 3200px) {
+  html { font-size: 32px; }
+  .mak-home-header-inner,
+  .mak-home-body { max-width: 2600px; }
+  .mak-home-welcome h1 { font-size: 96px; }
+}
+
+/* TV y control remoto: foco muy visible */
+@media (min-width: 1700px) {
+  :where(button, a, input, select, textarea, summary):focus-visible {
+    outline-width: 4px;
+    outline-offset: 4px;
+  }
+}
+
+/* Pantallas táctiles: objetivos de toque cómodos */
+@media (pointer: coarse) {
+  .mak-chip, .mak-segmented-item { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mak-ejercicio, .mak-chip, .mak-btn-primary { transition: none !important; }
+}

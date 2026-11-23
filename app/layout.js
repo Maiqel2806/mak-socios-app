@@ -8,6 +8,18 @@ export const metadata = {
 
   description:
     'Membresía, entrenamiento y progreso para clientes MAK FITNESS.',
+
+  applicationName: 'MAK Clientes',
+
+  appleWebApp: {
+    capable: true,
+    title: 'MAK Clientes',
+    statusBarStyle: 'black-translucent',
+  },
+
+  formatDetection: {
+    telephone: false,
+  },
 }
 
 
@@ -27,6 +39,9 @@ const fuenteDisplay = Barlow_Condensed({
 
 export const viewport = {
   themeColor: '#0D1417',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 const scriptTema = `

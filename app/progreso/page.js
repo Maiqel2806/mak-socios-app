@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import ProgressSummaryDashboard from '@/components/ProgressSummaryDashboard'
+import { cargarHistorialSocio } from '@/lib/historial'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export default async function ProgresoPage() {
   const { data: cuenta, error: errorCuenta } =
     await supabase
       .from('socio_cuentas_app')
-      .select('activo')
+      .select('activo, miembro_id')
       .eq('auth_user_id', userId)
       .maybeSingle()
 
@@ -38,8 +39,16 @@ export default async function ProgresoPage() {
     redirect('/inicio')
   }
 
+  let historial = null
+  try {
+    historial = await cargarHistorialSocio(cuenta.miembro_id)
+  } catch (e) {
+    console.error('HISTORIAL PROGRESO:', e)
+  }
+
   return (
     <ProgressSummaryDashboard
+      historial={historial}
       datos={error ? null : data}
       error={
         error

@@ -43,8 +43,126 @@ function Metrica({ Icono, titulo, valor, nota }) {
   )
 }
 
+const fechaCorta = new Intl.DateTimeFormat('es-EC', {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'America/Guayaquil',
+})
+
+function duracion(seg) {
+  const s = Number(seg)
+  if (!(s > 0)) return '—'
+  const m = Math.round(s / 60)
+  return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`
+}
+
+function HistorialSocio({ historial }) {
+  if (!historial || !historial.total_sesiones) {
+    return (
+      <section className="rounded-3xl border border-dashed border-zinc-300 bg-white p-6 text-center dark:border-white/15 dark:bg-zinc-900 lg:col-span-2">
+        <Trophy className="mx-auto text-[#02AFBB]" size={28} aria-hidden="true" />
+        <h2 className="mak-display mt-2 text-2xl">Tus récords aparecerán aquí</h2>
+        <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+          Finaliza tu primer entrenamiento registrando peso y repeticiones para ver tus marcas, tu volumen semanal y tu racha.
+        </p>
+      </section>
+    )
+  }
+
+  const maxVolumen = Math.max(1, ...historial.semanas.map((s) => s.volumen))
+
+  return (
+    <>
+      <section className="grid grid-cols-3 gap-3 lg:col-span-2" aria-label="Resumen histórico">
+        <div className="mak-card p-4">
+          <p className="mak-cifra text-3xl sm:text-4xl">{historial.racha}</p>
+          <p className="mt-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+            {historial.racha === 1 ? 'semana seguida' : 'semanas seguidas'}
+          </p>
+        </div>
+        <div className="mak-card p-4">
+          <p className="mak-cifra text-3xl sm:text-4xl">{historial.total_sesiones}</p>
+          <p className="mt-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400">entrenamientos</p>
+        </div>
+        <div className="mak-card p-4">
+          <p className="mak-cifra text-3xl sm:text-4xl">{historial.records.length}</p>
+          <p className="mt-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400">ejercicios con marca</p>
+        </div>
+      </section>
+
+      <section className="mak-card p-5">
+        <h2 className="mak-display text-2xl">Volumen por semana</h2>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Kilos totales levantados (peso × repeticiones), últimas 8 semanas.</p>
+        <div className="mt-5 flex h-40 items-end gap-2" role="img" aria-label="Gráfico de volumen semanal">
+          {historial.semanas.map((s, i) => (
+            <div key={s.semana} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+              <span className="text-[10px] font-semibold tabular-nums text-zinc-500">
+                {s.volumen ? (s.volumen >= 1000 ? `${mostrarNumero(s.volumen / 1000)}t` : mostrarNumero(s.volumen)) : ''}
+              </span>
+              <div
+                className={`w-full rounded-t-md ${i === historial.semanas.length - 1 ? 'bg-[#02AFBB]' : 'bg-zinc-300 dark:bg-white/20'}`}
+                style={{ height: `${Math.max(s.volumen ? 6 : 2, (s.volumen / maxVolumen) * 100)}%` }}
+                title={`Semana del ${s.semana}: ${mostrarNumero(s.volumen)} kg en ${s.sesiones} sesiones`}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between text-[10px] font-semibold text-zinc-400">
+          <span>hace 8 semanas</span>
+          <span>esta semana</span>
+        </div>
+      </section>
+
+      <section className="mak-card p-5">
+        <div className="flex items-center gap-2">
+          <Trophy size={20} className="text-amber-500" aria-hidden="true" />
+          <h2 className="mak-display text-2xl">Récords personales</h2>
+        </div>
+        {historial.records.length ? (
+          <ol className="mt-3 divide-y divide-zinc-100 dark:divide-white/10">
+            {historial.records.map((r) => (
+              <li key={r.nombre} className="flex items-center justify-between gap-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold">{r.nombre}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    1RM estimado {mostrarNumero(r.e1rm)} kg
+                  </p>
+                </div>
+                <p className="mak-cifra shrink-0 text-xl">
+                  {mostrarNumero(r.peso)} kg × {r.reps}
+                </p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-3 text-sm text-zinc-500">Registra series con peso para ver tus récords.</p>
+        )}
+      </section>
+
+      <section className="mak-card p-5 lg:col-span-2">
+        <h2 className="mak-display text-2xl">Últimos entrenamientos</h2>
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {historial.sesiones.map((s) => (
+            <li key={s.id} className="rounded-2xl bg-zinc-50 p-3.5 dark:bg-white/[0.04]">
+              <p className="text-xs font-semibold capitalize text-zinc-500 dark:text-zinc-400">
+                {fechaCorta.format(new Date(s.fecha_inicio))}
+              </p>
+              <p className="mt-0.5 truncate font-bold">{s.nombre_dia || 'Entrenamiento'}</p>
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-300">
+                {duracion(s.duracion_seg)} · {s.series} series · {mostrarNumero(s.volumen)} kg
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
+  )
+}
+
 export default function ProgressSummaryDashboard({
   datos,
+  historial = null,
   error = '',
 }) {
   const router = useRouter()
@@ -86,7 +204,7 @@ export default function ProgressSummaryDashboard({
     <main className="min-h-screen bg-zinc-100 pb-20 text-zinc-950 dark:bg-zinc-950 dark:text-white">
 
       <header className="border-b border-zinc-200 bg-white px-4 py-5 dark:border-white/10 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
               href="/inicio"
@@ -99,7 +217,7 @@ export default function ProgressSummaryDashboard({
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-400">
                 MAK FITNESS
               </p>
-              <h1 className="text-xl font-black sm:text-2xl">
+              <h1 className="mak-display text-2xl sm:text-3xl">
                 Mi progreso
               </h1>
             </div>
@@ -116,12 +234,12 @@ export default function ProgressSummaryDashboard({
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
+      <div className="mx-auto grid max-w-6xl gap-4 px-4 pt-5 lg:grid-flow-row-dense lg:grid-cols-2 lg:px-6">
 
         {(error || !resumen) ? (
           <section
             role="alert"
-            className="rounded-2xl border border-red-200 bg-white p-5 text-sm text-red-700 dark:border-red-500/20 dark:bg-zinc-900 dark:text-red-300"
+            className="rounded-2xl border border-red-200 bg-white p-5 text-sm text-red-700 dark:border-red-500/20 dark:bg-zinc-900 dark:text-red-300 lg:col-span-2"
           >
             {error ||
               'No pudimos cargar tu resumen. Actualiza la página para intentarlo nuevamente.'}
@@ -129,7 +247,7 @@ export default function ProgressSummaryDashboard({
         ) : (
           <>
 
-            <section className="rounded-3xl bg-zinc-950 p-5 text-white shadow-lg sm:p-7">
+            <section className="rounded-3xl bg-zinc-950 p-5 text-white shadow-lg sm:p-7 lg:col-span-2">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-black uppercase tracking-[0.14em] text-cyan-400">
                   Tu constancia esta semana
@@ -297,11 +415,13 @@ export default function ProgressSummaryDashboard({
               )}
             </section>
 
-            <p className="rounded-2xl bg-cyan-50 p-4 text-sm font-semibold leading-6 text-cyan-900 dark:bg-cyan-500/10 dark:text-cyan-200">
+            <HistorialSocio historial={historial} />
+
+            <p className="rounded-2xl bg-cyan-50 p-4 text-sm font-semibold leading-6 text-cyan-900 dark:bg-cyan-500/10 dark:text-cyan-200 lg:col-span-2">
               {mensaje}
             </p>
 
-            <p className="px-3 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            <p className="px-3 text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400 lg:col-span-2">
               MAK FITNESS · Entrenamiento real, para resultados reales.
             </p>
 
