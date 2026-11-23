@@ -25,6 +25,7 @@ import {
 
 import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import RoutinePlanView from '@/components/RoutinePlanView'
+import { aNumero, limpiarDecimal } from '@/lib/numeros'
 
 
 const OBJETIVOS = [
@@ -277,14 +278,10 @@ export default function RoutineCard({
     useMemo(
       () => {
         const peso =
-          Number(
-            formulario.peso_kg
-          )
+          aNumero(formulario.peso_kg)
 
         const estatura =
-          Number(
-            formulario.estatura_cm
-          )
+          aNumero(formulario.estatura_cm)
 
         if (
           !Number.isFinite(peso) ||
@@ -421,14 +418,10 @@ export default function RoutineCard({
       numero === 1
     ) {
       const estatura =
-        Number(
-          formulario.estatura_cm
-        )
+        aNumero(formulario.estatura_cm)
 
       const peso =
-        Number(
-          formulario.peso_kg
-        )
+        aNumero(formulario.peso_kg)
 
       if (
         !Number.isFinite(estatura) ||
@@ -732,16 +725,10 @@ export default function RoutineCard({
 
             body: JSON.stringify({
               estatura_cm:
-                Number(
-                  formulario
-                    .estatura_cm
-                ),
+                aNumero(formulario.estatura_cm),
 
               peso_kg:
-                Number(
-                  formulario
-                    .peso_kg
-                ),
+                aNumero(formulario.peso_kg),
 
               edad:
                 tieneFechaNacimiento
@@ -805,16 +792,10 @@ export default function RoutineCard({
         tiene_perfil: true,
 
         estatura_cm:
-          Number(
-            formulario
-              .estatura_cm
-          ),
+          aNumero(formulario.estatura_cm),
 
         peso_kg:
-          Number(
-            formulario
-              .peso_kg
-          ),
+          aNumero(formulario.peso_kg),
 
         imc:
           resultado.imc ||
@@ -1635,21 +1616,24 @@ export default function RoutineCard({
                         <div className="relative mt-2">
 
                           <input
-                            type="number"
+                            type="text"
                             inputMode="decimal"
-                            min="100"
-                            max="250"
+                            autoComplete="off"
+                            enterKeyHint="next"
                             value={
                               formulario.estatura_cm
                             }
                             onChange={(evento) =>
                               actualizar(
                                 'estatura_cm',
-                                evento.target.value
+                                limpiarDecimal(
+                                  evento.target.value,
+                                  1
+                                )
                               )
                             }
                             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 pr-14 text-base font-bold outline-none transition focus:border-cyan-500 dark:border-white/10 dark:bg-zinc-950"
-                            placeholder="165"
+                            placeholder="165,5"
                           />
 
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">
@@ -1670,22 +1654,24 @@ export default function RoutineCard({
                         <div className="relative mt-2">
 
                           <input
-                            type="number"
+                            type="text"
                             inputMode="decimal"
-                            min="20"
-                            max="350"
-                            step="0.1"
+                            autoComplete="off"
+                            enterKeyHint="next"
                             value={
                               formulario.peso_kg
                             }
                             onChange={(evento) =>
                               actualizar(
                                 'peso_kg',
-                                evento.target.value
+                                limpiarDecimal(
+                                  evento.target.value,
+                                  2
+                                )
                               )
                             }
                             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 pr-14 text-base font-bold outline-none transition focus:border-cyan-500 dark:border-white/10 dark:bg-zinc-950"
-                            placeholder="70.5"
+                            placeholder="70,5"
                           />
 
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">

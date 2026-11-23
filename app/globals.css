@@ -1199,3 +1199,213 @@ html:not(.dark) .maik-helper-trigger {
   overflow: hidden !important;
 }
 
+
+
+/* ==========================================================
+   MAK_SOCIOS_DISEÑO_V2 (2026-11)
+   Tokens de marca: grafito + cian MAK. Tipografía Barlow
+   (texto) y Barlow Condensed (títulos y cifras).
+   ========================================================== */
+
+:root {
+  --mak-grafito: #0d1417;
+  --mak-acero: #18252b;
+  --mak-cian: #02afbb;
+  --mak-cian-claro: #5fe3ea;
+  --mak-hielo: #e7f8f9;
+  --mak-metal: #93a4ab;
+  --mak-superficie: #ffffff;
+  --mak-borde: #e3e8ea;
+  --mak-texto-suave: #5b6b72;
+  --font-sans-fallback: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html.dark {
+  --mak-superficie: #131c20;
+  --mak-borde: rgba(255, 255, 255, 0.09);
+  --mak-texto-suave: #a3b3b9;
+}
+
+body,
+.mak-home-page,
+.mak-login-page {
+  font-family: var(--font-texto), var(--font-sans-fallback);
+  font-feature-settings: "tnum" 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3,
+.mak-display {
+  font-family: var(--font-display), var(--font-texto), var(--font-sans-fallback);
+  letter-spacing: -0.01em;
+}
+
+.mak-display { font-weight: 800; line-height: 1.02; }
+
+.mak-home-welcome h1,
+.mak-login-headline h1 {
+  font-family: var(--font-display), var(--font-sans-fallback);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.mak-home-welcome h1 { font-size: clamp(30px, 7vw, 42px); line-height: 1; }
+.mak-login-headline h1 { letter-spacing: -0.02em; }
+
+.mak-cifra {
+  font-family: var(--font-display), var(--font-sans-fallback);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mak-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mak-cian);
+}
+
+html.dark .mak-eyebrow { color: var(--mak-cian-claro); }
+
+.mak-shell {
+  background: linear-gradient(180deg, #e9f2f3 0, #f3f5f6 320px);
+  color: var(--mak-grafito);
+}
+
+html.dark .mak-shell {
+  background: linear-gradient(180deg, #0f2328 0, #0b1013 320px);
+  color: #f2f7f8;
+}
+
+.mak-topbar {
+  background:
+    radial-gradient(120% 140% at 100% 0, rgba(2, 175, 187, 0.28), transparent 55%),
+    linear-gradient(115deg, var(--mak-grafito) 0%, var(--mak-acero) 100%);
+  border-bottom: 1px solid rgba(95, 227, 234, 0.16);
+}
+
+.mak-card {
+  background: var(--mak-superficie);
+  border: 1px solid var(--mak-borde);
+  border-radius: 20px;
+}
+
+.mak-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--mak-cian);
+  color: #04232a;
+  font-weight: 800;
+  font-size: 14px;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+
+.mak-btn-primary:hover { background: #20c6d0; }
+.mak-btn-primary:active { transform: scale(0.98); }
+.mak-btn-primary:disabled { opacity: 0.55; }
+
+.mak-segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(13, 20, 23, 0.06);
+  overflow-x: auto;
+}
+
+html.dark .mak-segmented { background: rgba(255, 255, 255, 0.06); }
+
+.mak-segmented-item {
+  display: inline-flex;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mak-texto-suave);
+}
+
+.mak-segmented-item[aria-selected="true"] {
+  background: var(--mak-superficie);
+  color: inherit;
+  box-shadow: 0 1px 2px rgba(13, 20, 23, 0.12);
+}
+
+.mak-chip {
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--mak-borde);
+  background: var(--mak-superficie);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mak-chip-activo {
+  border-color: var(--mak-grafito);
+  background: var(--mak-grafito);
+  color: #fff;
+}
+
+html.dark .mak-chip-activo {
+  border-color: var(--mak-cian);
+  background: var(--mak-cian);
+  color: #04232a;
+}
+
+/* Tarjeta de ejercicio (rutina) */
+.mak-ejercicio {
+  position: relative;
+  background: var(--mak-superficie);
+  border: 1px solid var(--mak-borde);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.mak-ejercicio[data-superserie="true"] { border-left: 4px solid var(--mak-cian); }
+
+.mak-bloque-letra {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--mak-grafito);
+  color: #fff;
+  font-family: var(--font-display), var(--font-sans-fallback);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+html.dark .mak-bloque-letra { background: var(--mak-cian); color: #04232a; }
+
+.mak-prescripcion {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--mak-borde);
+}
+
+.mak-prescripcion > div { padding: 12px 8px; text-align: center; }
+.mak-prescripcion > div + div { border-left: 1px solid var(--mak-borde); }
+.mak-prescripcion .mak-cifra { font-size: 26px; }
+.mak-prescripcion small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mak-texto-suave);
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--mak-cian);
+  outline-offset: 2px;
+}

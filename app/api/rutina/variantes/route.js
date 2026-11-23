@@ -6,6 +6,89 @@ import {
   createClient,
 } from '@/lib/supabase/server'
 
+import {
+  construirBiblioteca,
+  obtenerVariantes,
+  uuidDesdeCodigo,
+} from '@/lib/rutinas/motor'
+
+import {
+  cargarEquipamiento,
+  cargarPersonalizados,
+  motorV4Activo,
+} from '@/lib/rutinas/servidor'
+
+
+async function variantesV4(
+  ejercicioId,
+  searchParams
+) {
+  const [
+    equipamiento,
+    personalizados,
+  ] = await Promise.all([
+    cargarEquipamiento(),
+    cargarPersonalizados(),
+  ])
+
+  const biblioteca =
+    construirBiblioteca(
+      personalizados
+    )
+
+  const original =
+    biblioteca.find(
+      (item) =>
+        uuidDesdeCodigo(
+          item.codigo
+        ) === ejercicioId
+    )
+
+  if (!original) {
+    return errorJson(
+      'Este ejercicio no pertenece a tu rutina actual.',
+      403
+    )
+  }
+
+  const series =
+    Number(searchParams.get('series')) || null
+
+  const variantes =
+    obtenerVariantes(
+      original.codigo,
+      {
+        equipamiento,
+        personalizados,
+        nivel:
+          searchParams.get('nivel') ||
+          'intermedio',
+      }
+    ).map((variante) => ({
+      ...variante,
+      equivalencia: 'alta',
+      series:
+        series ?? undefined,
+      repeticiones:
+        searchParams.get('repeticiones') ||
+        undefined,
+      descanso_seg:
+        Number(searchParams.get('descanso')) ||
+        undefined,
+    }))
+
+  return NextResponse.json({
+    ok: true,
+    datos: {
+      original: {
+        ejercicio_id: ejercicioId,
+        nombre: original.nombre,
+      },
+      variantes,
+    },
+  })
+}
+
 
 function errorJson(
   mensaje,
@@ -71,6 +154,13 @@ export async function GET(
       return errorJson(
         'Ejercicio no válido.',
         400
+      )
+    }
+
+    if (motorV4Activo()) {
+      return variantesV4(
+        ejercicioId,
+        searchParams
       )
     }
 

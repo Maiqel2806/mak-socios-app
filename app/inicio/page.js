@@ -7,6 +7,7 @@ import {
   LockKeyhole,
   LogOut,
   ChevronDown,
+  Dumbbell,
 } from 'lucide-react'
 
 import {
@@ -24,6 +25,7 @@ import ProgressEntryCard from '@/components/ProgressEntryCard'
 import RoutineCard from '@/components/RoutineCard'
 import MemberAccessCodeCard from '@/components/MemberAccessCodeCard'
 import AppWelcomeGuide from '@/components/AppWelcomeGuide'
+import { esAdministrador } from '@/lib/rutinas/servidor'
 
 export default async function InicioPage() {
   const supabase =
@@ -187,6 +189,9 @@ export default async function InicioPage() {
   }
 
 
+  const permisoAdmin =
+    await esAdministrador(supabase).catch(() => ({ ok: false }))
+
   return (
     <main className="mak-home-page min-h-screen bg-zinc-100 pb-24 text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <header className="mak-home-header">
@@ -197,6 +202,13 @@ export default async function InicioPage() {
             <p className="mak-home-slogan">Entrenamiento real, para resultados reales.</p>
           </div>
           <div className="mak-home-actions">
+            {permisoAdmin?.ok && (
+              <Link href="/admin/equipamiento"
+                aria-label="Equipamiento del gimnasio" title="Equipamiento del gimnasio"
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-cyan-300/40 bg-cyan-400/15 px-3 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25">
+                <Dumbbell size={15} aria-hidden="true" /> <span className="hidden sm:inline">Equipamiento</span>
+              </Link>
+            )}
               <Link href="/configuracion"
                 aria-label="Configuración" title="Configuración"
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20">

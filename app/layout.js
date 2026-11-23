@@ -1,3 +1,4 @@
+import { Barlow, Barlow_Condensed } from 'next/font/google'
 import './globals.css'
 import MaikAssistant from '@/components/MaikAssistant'
 
@@ -9,6 +10,24 @@ export const metadata = {
     'Membresía, entrenamiento y progreso para clientes MAK FITNESS.',
 }
 
+
+const fuenteTexto = Barlow({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-texto',
+  display: 'swap',
+})
+
+const fuenteDisplay = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-display',
+  display: 'swap',
+})
+
+export const viewport = {
+  themeColor: '#0D1417',
+}
 
 const scriptTema = `
 (function () {
@@ -36,6 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      className={`${fuenteTexto.variable} ${fuenteDisplay.variable}`}
       suppressHydrationWarning
     >
       <head>

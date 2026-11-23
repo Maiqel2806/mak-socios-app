@@ -46,13 +46,37 @@ function numero(valor) {
   }
 
   const convertido =
-    Number(valor)
+    Number(
+      String(valor)
+        .trim()
+        .replace(',', '.')
+    )
 
   return Number.isFinite(
     convertido
   )
     ? convertido
     : null
+}
+
+
+function redondearDecimal(
+  valor,
+  decimales
+) {
+  if (valor === null) {
+    return null
+  }
+
+  const factor =
+    10 ** decimales
+
+  return (
+    Math.round(
+      (valor + Number.EPSILON) *
+        factor
+    ) / factor
+  )
 }
 
 
@@ -134,13 +158,19 @@ export async function POST(
 
 
   const estatura =
-    numero(
-      body?.estatura_cm
+    redondearDecimal(
+      numero(
+        body?.estatura_cm
+      ),
+      1
     )
 
   const peso =
-    numero(
-      body?.peso_kg
+    redondearDecimal(
+      numero(
+        body?.peso_kg
+      ),
+      2
     )
 
   const edad =

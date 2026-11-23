@@ -574,20 +574,31 @@ export async function PATCH(request) {
     const actividad =
       body.actividad_sin_repeticiones === true
 
+    // Se acepta cualquier peso (máquinas en múltiplos de 2,5 kg, 3 kg,
+    // mancuernas de 1 kg...). Solo se limita a 2 decimales y 500 kg.
     if (
       Number.isNaN(peso) ||
       Number.isNaN(reps) ||
       (body.duracion_seg !== undefined &&
-       body.duracion_seg !== null) ||
-      (peso !== null &&
-        Math.abs(peso / 2.5 - Math.round(peso / 2.5)) >
-          0.0000001)
+       body.duracion_seg !== null)
     ) {
       return responderError(
-        'El peso debe avanzar en incrementos de 2,5 kg. No se registran tiempos por ejercicio.',
+        'Revisa el peso y las repeticiones registradas.',
         400
       )
     }
+
+    if (peso !== null && peso > 500) {
+      return responderError(
+        'El peso máximo permitido es 500 kg.',
+        400
+      )
+    }
+
+    const pesoNormalizado =
+      peso === null
+        ? null
+        : Math.round((peso + Number.EPSILON) * 100) / 100
 
     if (actividad && (peso !== null || reps !== null)) {
       return responderError(
@@ -612,7 +623,7 @@ export async function PATCH(request) {
       {
         p_entrenamiento_ejercicio_id: id,
         p_numero_serie: serie,
-        p_peso_kg: peso,
+        p_peso_kg: pesoNormalizado,
         p_repeticiones: reps,
         p_duracion_seg: null,
         p_rir: null,
@@ -632,11 +643,15 @@ export async function PATCH(request) {
       if (mensaje.includes('EJERCICIO_NO_DISPONIBLE'))
         return responderError('Ejercicio no disponible.', 409)
 
-      if (mensaje.includes('PESO_NO_DISPONIBLE'))
+      if (mensaje.includes('PESO_NO_DISPONIBLE')) {
+        // La función SQL antigua aún valida múltiplos de 2,5 kg.
+        // Se corrige con supabase/migrations/20261123_motor_rutinas_v4.sql
+        console.error('PESO_NO_DISPONIBLE: falta aplicar migración v4', error)
         return responderError(
-          'Introduce un peso válido en incrementos de 2,5 kg.',
+          'No pudimos guardar ese peso. Inténtalo de nuevo o avisa en recepción.',
           400
         )
+      }
 
       if (
         mensaje.includes('NUMERO_SERIE_INVALIDO') ||

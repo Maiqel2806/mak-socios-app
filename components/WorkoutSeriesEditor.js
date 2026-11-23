@@ -7,7 +7,28 @@ import {
   ChevronUp,
   Circle,
   Save,
+  Copy,
+  Minus,
+  Plus,
 } from 'lucide-react'
+
+import {
+  limpiarDecimal,
+  redondear,
+} from '@/lib/numeros'
+
+// Cualquier peso es válido (máquinas en múltiplos de 2,5 kg, 3 kg,
+// mancuernas de 1 kg, etc.). El incremento solo se usa para los
+// botones + / − y puede venir definido por ejercicio/máquina.
+const PESO_MAXIMO_KG = 500
+const INCREMENTO_POR_DEFECTO_KG = 2.5
+
+function incrementoDe(ejercicio) {
+  const valor = Number(ejercicio?.incremento_kg)
+  return Number.isFinite(valor) && valor > 0
+    ? valor
+    : INCREMENTO_POR_DEFECTO_KG
+}
 
 function esActividadPorTiempo(ejercicio) {
   const objetivo = String(
@@ -79,6 +100,7 @@ export default function WorkoutSeriesEditor({
     total <= 30
 
   const actividad = esActividadPorTiempo(ejercicio)
+  const incremento = incrementoDe(ejercicio)
 
   const [filas, setFilas] = useState(() =>
     inicializarFilas(ejercicio, cantidadValida ? total : 0)
@@ -124,6 +146,29 @@ export default function WorkoutSeriesEditor({
     }))
   }
 
+  function ajustarPeso(fila, direccion) {
+    const actual = numero(fila.peso)
+    const base = Number.isFinite(actual) && actual !== null ? actual : 0
+    const siguiente = Math.max(
+      0,
+      Math.min(PESO_MAXIMO_KG, redondear(base + direccion * incremento, 2))
+    )
+    cambiar(fila.numero, 'peso', String(siguiente).replace('.', ','))
+  }
+
+  function copiarAnterior(fila) {
+    const anterior = filas.find((item) => item.numero === fila.numero - 1)
+    if (!anterior) return
+    setFilas((actual) =>
+      actual.map((item) =>
+        item.numero === fila.numero
+          ? { ...item, peso: anterior.peso, reps: anterior.reps, modificada: true }
+          : item
+      )
+    )
+    onEdicionPendiente?.(ejercicio.id, true)
+  }
+
   async function guardarSerie(fila, completar) {
     if (!cantidadValida || guardando !== null) return
 
@@ -144,15 +189,10 @@ export default function WorkoutSeriesEditor({
         return
       }
 
-      if (
-        peso !== null &&
-        Math.abs(peso / 2.5 - Math.round(peso / 2.5)) >
-          0.0000001
-      ) {
+      if (peso !== null && peso > PESO_MAXIMO_KG) {
         setErrores((actual) => ({
           ...actual,
-          [fila.numero]:
-            'El peso debe ser múltiplo de 2,5 kg: 20, 22,5, 25, 27,5, 30...',
+          [fila.numero]: `Revisa el peso: el máximo permitido es ${PESO_MAXIMO_KG} kg.`,
         }))
         return
       }
@@ -175,7 +215,7 @@ export default function WorkoutSeriesEditor({
         body: JSON.stringify({
           ejercicio_id: ejercicio.id,
           numero_serie: fila.numero,
-          peso_kg: peso,
+          peso_kg: peso === null ? null : redondear(peso, 2),
           repeticiones: reps,
           actividad_sin_repeticiones: actividad,
           completada: completar,
@@ -280,7 +320,7 @@ export default function WorkoutSeriesEditor({
               <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                 {actividad
                   ? 'Marca la actividad cuando la hayas realizado. No se registran tiempos individuales.'
-                  : 'Introduce el peso realmente utilizado y las repeticiones de cada serie. Usa incrementos de 2,5 kg.'}
+                  : 'Introduce el peso realmente utilizado y las repeticiones de cada serie. Puedes escribir cualquier peso (ej. 21, 22,5 o 24 kg).'}
               </p>
 
               {filas.map((fila) => (
@@ -318,19 +358,38 @@ export default function WorkoutSeriesEditor({
                           Peso (kg)
                         </span>
 
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          min="0"
-                          step="2.5"
-                          placeholder="0"
-                          value={fila.peso}
-                          disabled={guardando !== null}
-                          onChange={(e) =>
-                            cambiar(fila.numero, 'peso', e.target.value)
-                          }
-                          className="h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-center text-base font-bold tabular-nums text-zinc-950 outline-none focus:border-[#02AFBB] focus:ring-2 focus:ring-cyan-500/15 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-800 dark:text-white"
-                        />
+                        <div className="flex h-12 items-stretch overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 focus-within:border-[#02AFBB] focus-within:ring-2 focus-within:ring-cyan-500/15 dark:border-white/10 dark:bg-zinc-800">
+                          <button
+                            type="button"
+                            aria-label={`Restar ${String(incremento).replace('.', ',')} kg`}
+                            disabled={guardando !== null}
+                            onClick={() => ajustarPeso(fila, -1)}
+                            className="mak-interactive grid w-10 shrink-0 place-items-center text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-white/5"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            autoComplete="off"
+                            placeholder="0"
+                            value={fila.peso}
+                            disabled={guardando !== null}
+                            onChange={(e) =>
+                              cambiar(fila.numero, 'peso', limpiarDecimal(e.target.value, 2))
+                            }
+                            className="min-w-0 flex-1 bg-transparent text-center text-base font-bold tabular-nums text-zinc-950 outline-none disabled:opacity-50 dark:text-white"
+                          />
+                          <button
+                            type="button"
+                            aria-label={`Sumar ${String(incremento).replace('.', ',')} kg`}
+                            disabled={guardando !== null}
+                            onClick={() => ajustarPeso(fila, 1)}
+                            className="mak-interactive grid w-10 shrink-0 place-items-center text-zinc-500 hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-white/5"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
                       </label>
 
                       <label>
@@ -339,15 +398,14 @@ export default function WorkoutSeriesEditor({
                         </span>
 
                         <input
-                          type="number"
+                          type="text"
                           inputMode="numeric"
-                          min="0"
-                          step="1"
+                          autoComplete="off"
                           placeholder="12"
                           value={fila.reps}
                           disabled={guardando !== null}
                           onChange={(e) =>
-                            cambiar(fila.numero, 'reps', e.target.value)
+                            cambiar(fila.numero, 'reps', limpiarDecimal(e.target.value, 0).slice(0, 3))
                           }
                           className="h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-center text-base font-bold tabular-nums text-zinc-950 outline-none focus:border-[#02AFBB] focus:ring-2 focus:ring-cyan-500/15 disabled:opacity-50 dark:border-white/10 dark:bg-zinc-800 dark:text-white"
                         />
@@ -355,6 +413,24 @@ export default function WorkoutSeriesEditor({
 
                     </div>
                   )}
+
+                  {!actividad &&
+                    fila.numero > 1 &&
+                    !fila.completada &&
+                    !fila.peso &&
+                    !fila.reps &&
+                    (filas[fila.numero - 2]?.peso || filas[fila.numero - 2]?.reps) && (
+                      <button
+                        type="button"
+                        disabled={guardando !== null}
+                        onClick={() => copiarAnterior(fila)}
+                        className="mak-interactive mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#028894] hover:bg-cyan-50 disabled:opacity-50 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+                      >
+                        <Copy size={13} />
+                        Igual que la serie {fila.numero - 1}
+                        {filas[fila.numero - 2]?.peso ? ` (${filas[fila.numero - 2].peso} kg)` : ''}
+                      </button>
+                    )}
 
                   {errores[fila.numero] && (
                     <p

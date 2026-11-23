@@ -20,6 +20,10 @@ import {
 
 import WorkoutSeriesEditor from './WorkoutSeriesEditor'
 
+import ExerciseDemo from './ExerciseDemo'
+
+import { imagenesDeEjercicio } from '@/lib/rutinas/medios'
+
 import WorkoutFinishControl from './WorkoutFinishControl'
 
 import WorkoutCancelControl from './WorkoutCancelControl'
@@ -28,6 +32,49 @@ function textoDias(cantidad) {
   return Number(cantidad) === 1
     ? '1 día'
     : `${Number(cantidad || 0)} días`
+}
+
+
+function BloqueRutinaExtra({
+  titulo,
+  minutos,
+  indicacion,
+  ejercicios,
+  tono,
+}) {
+  if (!indicacion && !(ejercicios || []).length) return null
+
+  const estilos =
+    tono === 'cian'
+      ? 'border-cyan-200 bg-cyan-50/70 dark:border-cyan-500/20 dark:bg-cyan-500/[0.06]'
+      : 'border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]'
+
+  return (
+    <section className={`mt-4 rounded-2xl border p-4 ${estilos}`}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h4 className="mak-display text-lg">{titulo}</h4>
+        {minutos ? (
+          <span className="text-sm font-bold text-zinc-600 dark:text-zinc-300">{minutos} min</span>
+        ) : null}
+      </div>
+
+      {indicacion && (
+        <p className="mt-1.5 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{indicacion}</p>
+      )}
+
+      {(ejercicios || []).length > 0 && (
+        <ul className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          {ejercicios.map((x) => (
+            <li key={x.nombre} className="w-24 shrink-0">
+              <ExerciseDemo imagenes={x.imagenes || [x.imagen_url]} nombre={x.nombre} tamano="md" />
+              <p className="mt-1.5 text-[11px] font-semibold leading-4">{x.nombre}</p>
+              {x.duracion && <p className="text-[11px] text-zinc-500">{x.duracion}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
 }
 
 
@@ -92,9 +139,13 @@ export default function RoutinePlanView({
     try {
       const respuesta =
         await fetch(
-          `/api/rutina/variantes?ejercicio_id=${encodeURIComponent(
-            ejercicio.ejercicio_id
-          )}`
+          `/api/rutina/variantes?${new URLSearchParams({
+            ejercicio_id: ejercicio.ejercicio_id,
+            nivel: rutina?.nivel || '',
+            series: String(ejercicio?.series ?? ''),
+            repeticiones: String(ejercicio?.repeticiones ?? ''),
+            descanso: String(ejercicio?.descanso_seg ?? ''),
+          }).toString()}`
         )
 
       const data =
@@ -675,14 +726,24 @@ export default function RoutinePlanView({
 
                   <div className="flex items-start gap-3">
 
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-sm font-black text-white dark:bg-white dark:text-zinc-950">
-                      {indice + 1}
+                    <div className="w-20 shrink-0 sm:w-24">
+                      <ExerciseDemo
+                        imagenes={imagenesDeEjercicio({
+                          ...ejercicio,
+                          nombre: ejercicio?.nombre_realizado,
+                        })}
+                        nombre={ejercicio?.nombre_realizado}
+                        tecnica={ejercicio?.tecnica}
+                        tamano="md"
+                      />
                     </div>
 
 
                     <div className="min-w-0 flex-1">
 
-                      <p className="text-base font-black text-zinc-950 dark:text-white">
+                      <span className="mak-bloque-letra">{indice + 1}</span>
+
+                      <p className="mak-display mt-1.5 text-xl text-zinc-950 dark:text-white">
                         {ejercicio?.nombre_realizado}
                       </p>
 
@@ -1115,8 +1176,8 @@ export default function RoutinePlanView({
               className={
                 Number(item?.dia) ===
                 Number(diaActivo)
-                  ? 'shrink-0 rounded-xl bg-[#02AFBB] px-4 py-2.5 text-sm font-black text-white'
-                  : 'shrink-0 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-bold text-zinc-600 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-300'
+                  ? 'mak-chip mak-chip-activo'
+                  : 'mak-chip text-zinc-600 dark:text-zinc-300'
               }
             >
               Día {item?.dia}
@@ -1143,7 +1204,7 @@ export default function RoutinePlanView({
                 Día {dia?.dia}
               </p>
 
-              <h3 className="mt-1 text-xl font-black text-zinc-950 dark:text-white">
+              <h3 className="mak-display mt-1 text-[28px] text-zinc-950 dark:text-white">
                 {dia?.titulo}
               </h3>
 
@@ -1156,7 +1217,7 @@ export default function RoutinePlanView({
                 Estimado
               </p>
 
-              <p className="text-sm font-black">
+              <p className="mak-cifra whitespace-nowrap text-xl">
                 {dia?.duracion_estimada_min} min
               </p>
 
@@ -1179,11 +1240,11 @@ export default function RoutinePlanView({
                 iniciandoEntrenamiento ||
                 cargandoEntrenamiento
               }
-              className="mak-interactive mt-4 w-full rounded-2xl bg-zinc-950 px-5 py-4 text-sm font-black text-white disabled:opacity-50 dark:bg-white dark:text-zinc-950"
+              className="mak-btn-primary mt-4 w-full px-5 py-4 text-base"
             >
               {iniciandoEntrenamiento
-                ? 'Iniciando entrenamiento...'
-                : '▶ Iniciar entrenamiento'}
+                ? 'Iniciando entrenamiento…'
+                : 'Iniciar entrenamiento'}
             </button>
 
           ) : Number(
@@ -1222,20 +1283,28 @@ export default function RoutinePlanView({
           )}
 
 
-          <div className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50/60 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/5">
+          <BloqueRutinaExtra
+            titulo="Calentamiento"
+            minutos={dia?.calentamiento?.duracion_min}
+            indicacion={dia?.calentamiento?.indicacion}
+            ejercicios={dia?.calentamiento?.ejercicios}
+            tono="cian"
+          />
 
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-300">
-              Calentamiento · {dia?.calentamiento?.duracion_min} min
+
+          <div className="mt-4 flex items-baseline justify-between gap-3">
+            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+              {(dia?.ejercicios || []).length} ejercicios
             </p>
-
-            <p className="mt-2 text-sm leading-6 text-cyan-900 dark:text-cyan-100">
-              {dia?.calentamiento?.indicacion}
-            </p>
-
+            {(dia?.ejercicios || []).some((x) => x?.superserie) && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Las letras iguales (C1, C2) se hacen en superserie
+              </p>
+            )}
           </div>
 
 
-          <div className="mt-4 space-y-3">
+          <ol className="mt-3 space-y-3">
 
             {(dia?.ejercicios || []).map(
               (
@@ -1259,59 +1328,70 @@ export default function RoutinePlanView({
                     ]
                   )
 
+                const esCardio =
+                  ejercicio?.patron_movimiento === 'cardio'
+
+                const etiqueta =
+                  ejercicio?.superserie ||
+                  ejercicio?.bloque ||
+                  String(indice + 1)
+
                 return (
 
-                  <div
+                  <li
                     key={
                       ejercicio
                         ?.ejercicio_id ||
                       `${dia?.dia}-${indice}`
                     }
-                    className="rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm dark:border-white/10 dark:bg-white/[0.02] sm:p-4"
+                    className="mak-ejercicio"
+                    data-superserie={Boolean(ejercicio?.superserie)}
                   >
 
-                    <div className="flex items-start gap-3">
+                    <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
 
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-xs font-black text-white dark:bg-white dark:text-zinc-950">
-                        {indice + 1}
+                      <div className="w-24 shrink-0 sm:w-32">
+                        <ExerciseDemo
+                          imagenes={imagenesDeEjercicio(ejercicioVisible)}
+                          nombre={ejercicioVisible?.nombre}
+                          tecnica={ejercicioVisible?.tecnica}
+                          tamano="md"
+                        />
                       </div>
-
 
                       <div className="min-w-0 flex-1">
 
                         <div className="flex flex-wrap items-center gap-2">
-
-                          <p className="font-black text-zinc-950 dark:text-white">
-                            {ejercicioVisible?.nombre}
-                          </p>
-
+                          <span className="mak-bloque-letra" aria-label={`Bloque ${etiqueta}`}>
+                            {etiqueta}
+                          </span>
+                          {ejercicio?.bloque_titulo && (
+                            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                              {ejercicio.bloque_titulo}
+                            </span>
+                          )}
                           {tieneVariante && (
-
-                            <span className="rounded-full bg-cyan-100 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
+                            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[11px] font-bold text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300">
                               Variante
                             </span>
-
                           )}
-
                         </div>
 
+                        <h4 className="mak-display mt-2 text-[21px] text-zinc-950 dark:text-white sm:text-2xl">
+                          {ejercicioVisible?.nombre}
+                        </h4>
 
-                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                           {ejercicioVisible?.grupo_muscular}
-
-                          {ejercicioVisible
-                            ?.equipamiento
+                          {ejercicioVisible?.equipamiento
                             ? ` · ${ejercicioVisible.equipamiento}`
                             : ''}
                         </p>
 
-
                         {tieneVariante && (
-
-                          <p className="mt-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+                          <p className="mt-1 text-xs font-semibold text-cyan-700 dark:text-cyan-400">
                             Sustituye a: {ejercicio?.nombre}
                           </p>
-
                         )}
 
                       </div>
@@ -1319,142 +1399,103 @@ export default function RoutinePlanView({
                     </div>
 
 
-                    <div className="mt-4 grid grid-cols-3 gap-2">
-
-                      <div className="rounded-xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
-
-                        <p className="text-[10px] font-black uppercase tracking-wide text-zinc-400">
-                          Series
-                        </p>
-
-                        <p className="mt-1 font-black">
-                          {ejercicioVisible?.series}
-                        </p>
-
+                    <div className="mak-prescripcion">
+                      <div>
+                        <span className="mak-cifra">{ejercicioVisible?.series}</span>
+                        <small>{Number(ejercicioVisible?.series) === 1 ? 'bloque' : 'series'}</small>
                       </div>
-
-
-                      <div className="rounded-xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
-
-                        <p className="text-[10px] font-black uppercase tracking-wide text-zinc-400">
-                          Reps
-                        </p>
-
-                        <p className="mt-1 font-black">
-                          {ejercicioVisible?.repeticiones}
-                        </p>
-
+                      <div>
+                        <span className="mak-cifra">{ejercicioVisible?.repeticiones}</span>
+                        <small>{/seg|min/i.test(String(ejercicioVisible?.repeticiones)) ? 'duración' : 'repeticiones'}</small>
                       </div>
-
-
-                      <div className="rounded-xl bg-zinc-50 p-3 text-center dark:bg-white/[0.04]">
-
-                        <p className="text-[10px] font-black uppercase tracking-wide text-zinc-400">
-                          Descanso
-                        </p>
-
-                        <p className="mt-1 font-black">
-                          {ejercicioVisible?.descanso_seg}s
-                        </p>
-
+                      <div>
+                        <span className="mak-cifra">
+                          {Number(ejercicioVisible?.descanso_seg) > 0 ? `${ejercicioVisible.descanso_seg}s` : '—'}
+                        </span>
+                        <small>{Number(ejercicioVisible?.descanso_seg) > 0 ? 'descanso' : 'sin pausa'}</small>
                       </div>
-
                     </div>
 
 
-                    {ejercicioVisible
-                      ?.intensidad && (
+                    {(ejercicioVisible?.intensidad || ejercicioVisible?.tecnica || ejercicioVisible?.recomendacion || (!esCardio && ejercicio?.ejercicio_id)) && (
+                      <div className="border-t border-zinc-100 px-3 pb-3 pt-2.5 dark:border-white/10 sm:px-4">
 
-                      <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2.5 text-xs font-bold leading-5 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
-                        {ejercicioVisible.intensidad}
-                      </p>
-
-                    )}
-
-
-                    {(ejercicioVisible?.tecnica || ejercicioVisible?.recomendacion) && (
-                      <details className="group mt-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
-                        <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-xs font-bold text-zinc-700 marker:hidden dark:text-zinc-200 [&::-webkit-details-marker]:hidden">
-                          Técnica y consejos
-                          <span aria-hidden="true" className="text-cyan-600 transition group-open:rotate-180">⌄</span>
-                        </summary>
-                        {ejercicioVisible?.tecnica && (
-                          <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                            <span className="font-bold">Técnica: </span>{ejercicioVisible.tecnica}
+                        {ejercicioVisible?.intensidad && (
+                          <p className="text-xs font-semibold leading-5 text-emerald-800 dark:text-emerald-300">
+                            {ejercicioVisible.intensidad}
                           </p>
                         )}
-                        {ejercicioVisible?.recomendacion && (
-                          <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                            <span className="font-bold">Consejo: </span>{ejercicioVisible.recomendacion}
-                          </p>
+
+                        {(ejercicioVisible?.tecnica || ejercicioVisible?.recomendacion) && (
+                          <details className="group mt-1.5">
+                            <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 [&::-webkit-details-marker]:hidden">
+                              Técnica y consejos
+                              <span aria-hidden="true" className="text-[#02AFBB] transition group-open:rotate-180">⌄</span>
+                            </summary>
+                            {ejercicioVisible?.tecnica && (
+                              <p className="mt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                                {ejercicioVisible.tecnica}
+                              </p>
+                            )}
+                            {ejercicioVisible?.recomendacion && (
+                              <p className="mt-2 rounded-xl bg-zinc-50 px-3 py-2 text-sm leading-6 text-zinc-700 dark:bg-white/[0.04] dark:text-zinc-300">
+                                {ejercicioVisible.recomendacion}
+                              </p>
+                            )}
+                          </details>
                         )}
-                      </details>
-                    )}
 
+                        {!esCardio && ejercicio?.ejercicio_id && (
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                abrirVariantes(
+                                  ejercicio,
+                                  dia?.dia,
+                                  clave
+                                )
+                              }
+                              className="mak-interactive flex-1 rounded-xl border border-zinc-200 px-3 py-2.5 text-xs font-bold text-zinc-700 hover:border-[#02AFBB] hover:text-[#027c87] dark:border-white/10 dark:text-zinc-200"
+                            >
+                              ¿Máquina ocupada? Ver alternativas
+                            </button>
 
-                    {ejercicio
-                      ?.patron_movimiento !==
-                      'cardio' &&
-                      ejercicio
-                        ?.ejercicio_id && (
-
-                      <div className="mt-4 flex gap-2">
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            abrirVariantes(
-                              ejercicio,
-                              dia?.dia,
-                              clave
-                            )
-                          }
-                          className="mak-interactive flex-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-xs font-black text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300"
-                        >
-                          Ver variantes
-                        </button>
-
-
-                        {tieneVariante && (
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              volverOriginal(
-                                clave
-                              )
-                            }
-                            className="mak-interactive rounded-xl border border-zinc-200 px-3 py-2.5 text-xs font-black text-zinc-600 dark:border-white/10 dark:text-zinc-300"
-                          >
-                            Original
-                          </button>
-
+                            {tieneVariante && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  volverOriginal(
+                                    clave
+                                  )
+                                }
+                                className="mak-interactive rounded-xl border border-zinc-200 px-3 py-2.5 text-xs font-bold text-zinc-600 dark:border-white/10 dark:text-zinc-300"
+                              >
+                                Usar original
+                              </button>
+                            )}
+                          </div>
                         )}
 
                       </div>
-
                     )}
 
-                  </div>
+                  </li>
 
                 )
               }
             )}
 
-          </div>
+          </ol>
 
 
-          <div className="mt-4 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.04]">
-
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-zinc-400">
-              Cierre · {dia?.cierre?.duracion_min} min
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-              {dia?.cierre?.indicacion}
-            </p>
-
-          </div>
+          <BloqueRutinaExtra
+            titulo="Vuelta a la calma"
+            minutos={dia?.cierre?.duracion_min}
+            indicacion={dia?.cierre?.indicacion}
+            ejercicios={dia?.cierre?.ejercicios}
+            tono="neutro"
+          />
 
 
           <p className="mt-3 text-xs leading-5 text-zinc-400">
