@@ -174,27 +174,14 @@ create policy socio_rutinas_v4_propia
 
 
 -- =====================================================================
--- PARTE 2 · PENDIENTE (requiere la definición actual de las funciones)
+-- NOTA (actualizada): el motor v4 guarda las rutinas en la tabla real
+-- public.socio_rutinas_generadas (motor_version = 'mak-adaptativo-v4'),
+-- así el inicio de entrenamiento funciona igual que antes.
+-- La tabla socio_rutinas_v4 de arriba ya no se usa (es inofensiva).
 --
--- Ejecuta este diagnóstico y comparte el resultado para completar:
---
---   select p.proname, pg_get_functiondef(p.oid)
---   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
---   where n.nspname = 'public'
---     and p.proname in ('guardar_mi_serie_entrenamiento_app',
---                       'iniciar_mi_entrenamiento_con_variantes_app',
---                       'guardar_mi_perfil_fisico_app',
---                       'obtener_mi_rutina_app');
---
--- a) guardar_mi_serie_entrenamiento_app: eliminar la regla que lanza
---    PESO_NO_DISPONIBLE cuando el peso no es múltiplo de 2,5 kg y
---    aceptar cualquier peso >= 0 y <= 500 con 2 decimales.
---
--- b) iniciar_mi_entrenamiento_con_variantes_app: cuando exista una
---    rutina activa en socio_rutinas_v4, tomar los ejercicios del día
---    desde ese JSON (rutina->'dias'). Hasta entonces NO actives
---    MOTOR_RUTINAS=v4 en producción.
---
--- c) guardar_mi_perfil_fisico_app y la columna de estatura: si son
---    integer, pasar a numeric(5,1) para aceptar 170,5 cm.
+-- Orden para activar el motor v4:
+--   1) Este archivo (equipamiento editable).
+--   2) 20261123_pesos_libres_series.sql
+--   3) 20261123_motor_v4_ejercicios.sql
+--   4) En Vercel: MOTOR_RUTINAS=v4 (primero solo en Preview).
 -- =====================================================================

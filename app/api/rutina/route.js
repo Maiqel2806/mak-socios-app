@@ -11,13 +11,13 @@ import {
 } from '@/lib/supabase/admin'
 
 import {
+  VERSION_MOTOR,
   generarRutina,
 } from '@/lib/rutinas/motor'
 
 import {
   cargarEquipamiento,
   cargarPersonalizados,
-  huellaPerfil,
   miembroDelUsuario,
   motorV4Activo,
 } from '@/lib/rutinas/servidor'
@@ -161,83 +161,10 @@ export async function GET() {
   }
 
 
-  if (!motorV4Activo()) {
-    return NextResponse.json({
-      ok: true,
-      estado: data,
-    })
-  }
-
-  // ---------- Motor v4: la rutina vive en socio_rutinas_v4 ----------
-  const miembroId =
-    await miembroDelUsuario(
-      supabase,
-      userId
-    )
-
-  const rutinaV4 =
-    miembroId
-      ? await rutinaActivaV4(
-          miembroId
-        )
-      : null
-
-  if (!rutinaV4) {
-    return NextResponse.json({
-      ok: true,
-      estado: {
-        ...(data || {}),
-        tiene_rutina: false,
-        rutina: null,
-        // Si existía una rutina del motor anterior, invitamos a renovarla
-        requiere_regenerar:
-          Boolean(data?.tiene_rutina),
-      },
-    })
-  }
-
   return NextResponse.json({
     ok: true,
-    estado: {
-      ...(data || {}),
-      tiene_rutina: true,
-      rutina: rutinaV4.rutina,
-      motor: 'v4',
-      requiere_regenerar:
-        huellaPerfil(data?.perfil) !==
-        rutinaV4.huella_perfil,
-    },
+    estado: data,
   })
-}
-
-
-async function rutinaActivaV4(
-  miembroId
-) {
-  try {
-    const admin =
-      createAdminClient()
-
-    const {
-      data,
-      error,
-    } = await admin
-      .from('socio_rutinas_v4')
-      .select('id, rutina, huella_perfil, created_at')
-      .eq('miembro_id', miembroId)
-      .eq('activa', true)
-      .order('created_at', {
-        ascending: false,
-      })
-      .limit(1)
-      .maybeSingle()
-
-    return error
-      ? null
-      : data
-  } catch {
-    return null
-  }
 }
 
 
@@ -303,6 +230,50 @@ async function generarRutinaV4(
     )
   }
 
+  const admin =
+    createAdminClient()
+
+  // Perfil completo directamente de la tabla (incluye observaciones,
+  // precauciones y objetivo secundario)
+  const {
+    data: perfilTabla,
+  } = await admin
+    .from('socio_perfiles_fisicos')
+    .select('*')
+    .eq('miembro_id', miembroId)
+    .maybeSingle()
+
+  const perfil = {
+    ...(estado.perfil || {}),
+    ...(perfilTabla || {}),
+  }
+
+  // Popularidad de ejercicios en las rutinas activas de otros socios:
+  // el motor la usa para repartir y evitar que todos tengan lo mismo
+  const {
+    data: activas,
+  } = await admin
+    .from('socio_rutinas_generadas')
+    .select('rutina_json')
+    .eq('activa', true)
+    .eq('motor_version', VERSION_MOTOR)
+    .neq('miembro_id', miembroId)
+    .order('fecha_registro', { ascending: false })
+    .limit(80)
+
+  const popularidad = {}
+  for (const fila of activas || []) {
+    const vistos = new Set()
+    for (const dia of fila?.rutina_json?.dias || []) {
+      for (const ej of dia?.ejercicios || []) {
+        if (ej?.codigo && !vistos.has(ej.codigo)) {
+          vistos.add(ej.codigo)
+          popularidad[ej.codigo] = (popularidad[ej.codigo] || 0) + 1
+        }
+      }
+    }
+  }
+
   const [
     equipamiento,
     personalizados,
@@ -313,41 +284,49 @@ async function generarRutinaV4(
 
   const rutina =
     generarRutina(
-      estado.perfil,
+      perfil,
       {
         equipamiento,
         personalizados,
+        popularidad,
         semilla:
           `${miembroId}-${Date.now()}`,
       }
     )
 
-  const admin =
-    createAdminClient()
-
   // Conserva el historial: la rutina anterior queda inactiva, no se borra
-  await admin
-    .from('socio_rutinas_v4')
+  const {
+    error: errorDesactivar,
+  } = await admin
+    .from('socio_rutinas_generadas')
     .update({
       activa: false,
     })
     .eq('miembro_id', miembroId)
     .eq('activa', true)
 
+  if (errorDesactivar) {
+    console.error('DESACTIVAR RUTINA V4:', errorDesactivar)
+    return errorJson('No pudimos guardar tu rutina.', 500)
+  }
+
   const {
     error: errorGuardar,
   } = await admin
-    .from('socio_rutinas_v4')
+    .from('socio_rutinas_generadas')
     .insert({
       miembro_id: miembroId,
-      rutina,
-      motor: rutina.motor,
-      semilla: rutina.semilla,
-      huella_perfil:
-        huellaPerfil(
-          estado.perfil
-        ),
+      objetivo: perfil.objetivo,
+      nivel: perfil.nivel,
+      dias_semana: rutina.dias_semana,
+      tiempo_sesion_min: rutina.tiempo_maximo_sesion_min,
+      limitaciones: perfil.limitaciones || null,
+      rutina_json: rutina,
       activa: true,
+      perfil_fecha_actualizacion:
+        perfil.fecha_actualizacion || new Date().toISOString(),
+      motor_version: rutina.motor,
+      origen: 'app_motor_v4',
     })
 
   if (errorGuardar) {

@@ -144,3 +144,11 @@ UI:
 - `components/MakCargando.js` + estilos `.mk-*` en globals.css: figuras originales (SVG + CSS) haciendo dominadas, flexiones, abdominales, sentadillas (sprite de 3 cuadros) y jumping jacks; rotan cada 3,6 s con frases ("Ajustando el pin…").
 - Usado en: login, `app/loading.js` (entre pantallas), guardar perfil y generar rutina, iniciar entrenamiento, búsqueda de alternativas y panel de equipamiento.
 - `portal` para mostrarlo encima de ventanas con animación; respeta "reducir movimiento".
+
+## Cambios 2026-11-23 (7): rutinas distintas para todos y objetivo secundario
+
+- Diagnóstico: en producción las rutinas las genera el motor SQL `mak-determinista-v3`; con el mismo perfil produce la misma rutina. El motor v4 estaba apagado.
+- Motor v4 listo para activar: guarda en `socio_rutinas_generadas` (tabla real), semilla por socio y momento, y reparto entre socios (penaliza los ejercicios más presentes en rutinas activas de otros). Prueba: 30 socios con perfil idéntico → 0 rutinas iguales, 43 % de coincidencia promedio, 73 ejercicios distintos.
+- `supabase/migrations/20261123_motor_v4_ejercicios.sql`: registra los 112 ejercicios v4 en `app_ejercicios` (excluidos del motor v3 con un equipo inactivo). Probado en Postgres 16 con réplica del esquema.
+- Objetivo secundario opcional (`lib/objetivos.js`), guardado como línea en `observaciones`; el motor v4 ajusta reps, descansos, volumen o cardio según el secundario.
+- Variantes: si el ejercicio viene del motor anterior, se usa la función SQL de variantes.

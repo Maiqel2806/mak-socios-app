@@ -44,11 +44,9 @@ async function variantesV4(
         ) === ejercicioId
     )
 
+  // Ejercicio de una rutina del motor anterior: usar el catálogo SQL
   if (!original) {
-    return errorJson(
-      'Este ejercicio no pertenece a tu rutina actual.',
-      403
-    )
+    return null
   }
 
   const series =
@@ -158,10 +156,15 @@ export async function GET(
     }
 
     if (motorV4Activo()) {
-      return variantesV4(
-        ejercicioId,
-        searchParams
-      )
+      const respuestaV4 =
+        await variantesV4(
+          ejercicioId,
+          searchParams
+        )
+
+      if (respuestaV4) {
+        return respuestaV4
+      }
     }
 
     const {

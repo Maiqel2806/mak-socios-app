@@ -28,6 +28,13 @@ import ExclusiveBenefitCard from '@/components/ExclusiveBenefitCard'
 import RoutinePlanView from '@/components/RoutinePlanView'
 import { aNumero, limpiarDecimal } from '@/lib/numeros'
 import PrecaucionesSalud from '@/components/PrecaucionesSalud'
+import {
+  OBJETIVOS as OBJETIVOS_INFO,
+  SECUNDARIOS_VALIDOS,
+  conSecundario,
+  extraerSecundario,
+  tituloObjetivo,
+} from '@/lib/objetivos'
 import MakCargando from '@/components/MakCargando'
 import GuiaRevisionSalud from '@/components/GuiaRevisionSalud'
 import { zonasDelPerfil } from '@/lib/precauciones'
@@ -263,7 +270,10 @@ export default function RoutineCard({
       perfilBase?.limitaciones || '',
 
     observaciones:
-      perfilBase?.observaciones || '',
+      extraerSecundario(perfilBase?.observaciones).resto,
+
+    objetivo_secundario:
+      extraerSecundario(perfilBase?.observaciones).secundario,
   })
 
 
@@ -790,9 +800,11 @@ export default function RoutineCard({
                   .trim() || null,
 
               observaciones:
-                formulario
-                  .observaciones
-                  .trim() || null,
+                conSecundario(
+                  formulario.observaciones.trim(),
+                  formulario.objetivo_secundario,
+                  formulario.objetivo
+                ) || null,
             }),
           }
         )
@@ -862,9 +874,11 @@ export default function RoutineCard({
             .trim() || null,
 
         observaciones:
-          formulario
-            .observaciones
-            .trim() || null,
+          conSecundario(
+            formulario.observaciones.trim(),
+            formulario.objetivo_secundario,
+            formulario.objetivo
+          ) || null,
       }
 
 
@@ -959,7 +973,10 @@ export default function RoutineCard({
         perfil?.limitaciones || '',
 
       observaciones:
-        perfil?.observaciones || '',
+        extraerSecundario(perfil?.observaciones).resto,
+
+      objetivo_secundario:
+        extraerSecundario(perfil?.observaciones).secundario,
     })
 
     setGuardadoReciente(false)
@@ -1332,6 +1349,9 @@ export default function RoutineCard({
                         {etiquetaObjetivo(
                           perfil?.objetivo
                         )}
+                        {extraerSecundario(perfil?.observaciones).secundario
+                          ? ` + ${tituloObjetivo(extraerSecundario(perfil?.observaciones).secundario)}`
+                          : ''}
                       </p>
 
                     </div>
@@ -1790,7 +1810,7 @@ export default function RoutineCard({
                     <div>
 
                       <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-                        Elige el objetivo que mejor represente lo que quieres conseguir en este momento.
+                        Elige tu objetivo principal: el que más te importa ahora.
                       </p>
 
 
@@ -1831,12 +1851,45 @@ export default function RoutineCard({
                                 />
 
                                 {objetivo.titulo}
+                                <span className="mt-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                  {OBJETIVOS_INFO.find((o) => o.valor === objetivo.valor)?.detalle}
+                                </span>
                               </button>
                             )
                           }
                         )}
 
                       </div>
+
+                      {formulario.objetivo && (
+                        <fieldset className="mt-6">
+                          <legend className="text-sm font-black">¿Quieres sumar un segundo enfoque? <span className="font-medium text-zinc-500">(opcional)</span></legend>
+                          <p className="mt-1 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                            Tu objetivo principal manda; el segundo ajusta la rutina sin restarle efectividad.
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              aria-pressed={!formulario.objetivo_secundario}
+                              onClick={() => actualizar('objetivo_secundario', '')}
+                              className={`mak-chip ${!formulario.objetivo_secundario ? 'mak-chip-activo' : ''}`}
+                            >
+                              Solo uno
+                            </button>
+                            {SECUNDARIOS_VALIDOS.filter((v) => v !== formulario.objetivo).map((v) => (
+                              <button
+                                key={v}
+                                type="button"
+                                aria-pressed={formulario.objetivo_secundario === v}
+                                onClick={() => actualizar('objetivo_secundario', v)}
+                                className={`mak-chip ${formulario.objetivo_secundario === v ? 'mak-chip-activo' : ''}`}
+                              >
+                                + {tituloObjetivo(v)}
+                              </button>
+                            ))}
+                          </div>
+                        </fieldset>
+                      )}
 
                     </div>
 
@@ -2021,6 +2074,9 @@ export default function RoutineCard({
                               {etiquetaObjetivo(
                                 formulario.objetivo
                               )}
+                              {formulario.objetivo_secundario && formulario.objetivo_secundario !== formulario.objetivo
+                                ? ` + ${tituloObjetivo(formulario.objetivo_secundario)}`
+                                : ''}
                             </p>
                           </div>
 
