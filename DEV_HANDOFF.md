@@ -160,3 +160,11 @@ UI:
 - 4 ejercicios nuevos de bajo impacto (116 en total). Migración `20261123_motor_v4_ejercicios.sql` regenerada y probada.
 - La rutina muestra "Hecha para ti" (nivel, IMC, edad, días, minutos) y qué motor la generó.
 - Pruebas: 1.296 combinaciones (6 tipos de cuerpo × 6 objetivos × 3 niveles × 4 frecuencias × 3 duraciones): 0 ejercicios no aptos, 0 días con menos de 7 ejercicios, 0 sesiones fuera de tiempo.
+
+## Cambios 2026-11-25 (9): estabilización para producción
+
+- La rutina activa se lee directamente de `socio_rutinas_generadas` cuando el motor v4 está activo (`estadoConRutinaV4`); si la función SQL antigua falla, se arma el estado desde las tablas (`estadoDesdeTablas`). Si el perfil cambió después de generar la rutina, se pide actualizarla.
+- Guardado seguro (`lib/rutinas/generacion.js`): inserta la rutina nueva inactiva, desactiva las anteriores y activa la nueva; si algo falla restaura la anterior. Errores visibles arriba de la pantalla (`AvisoFlotante`) con detalle técnico.
+- `/api/rutina/motor` indica qué motor está activo; `/api/rutina/diagnostico` prueba todo el flujo sin cambiar la rutina (en producción solo administradores).
+- `supabase/migrations/20261123_finalizar_pesos_libres.sql`: `finalizar_mi_entrenamiento_app()` ya no exige pesos múltiplos de 2,5 kg.
+- Motor: repeticiones realistas en ejercicios con peso corporal (p. ej. dominadas 5-8 en intermedio, no 15-20); sin zancadas ni búlgara para principiantes con obesidad o de 55+ años; un solo ejercicio lumbar aislado por día.

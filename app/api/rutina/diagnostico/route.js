@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { motorV4Activo } from '@/lib/rutinas/servidor'
+import { motorV4Activo, esAdministrador } from '@/lib/rutinas/servidor'
 import {
   prepararRutinaV4,
   guardarRutinaV4,
@@ -30,6 +30,17 @@ export async function GET() {
     const userId = claims?.claims?.sub
     anotar('sesion', Boolean(userId), userId ? null : 'Inicia sesión en la app y vuelve a abrir esta página.')
     if (!userId) return NextResponse.json({ ok: false, pasos })
+
+    // En producción, solo administradores (MAK_ADMIN_CODIGOS)
+    if (process.env.VERCEL_ENV === 'production') {
+      const permiso = await esAdministrador(supabase).catch(() => ({ ok: false }))
+      if (!permiso?.ok) {
+        return NextResponse.json(
+          { ok: false, error: 'Disponible solo para administradores.' },
+          { status: 403 }
+        )
+      }
+    }
 
     const preparada = await prepararRutinaV4(supabase, userId)
     if (!preparada.ok) {
