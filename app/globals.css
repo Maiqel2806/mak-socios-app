@@ -1770,3 +1770,33 @@ html.dark .mak-hoy { box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); }
   .mk-figura *, .mk-puntos span, .mk-entrada, .mk-cargando-pantalla { animation: none !important; }
   .mk-sent-a { opacity: 1; }
 }
+
+/* MAIK_GUIA_DINAMICA: el cuadro se mueve para no tapar lo que señala */
+.maik-game-dialog-movil {
+  transition: top .32s cubic-bezier(.2,.8,.2,1);
+}
+.maik-game-dialog-compacto {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: min(620px, calc(100vw - 14px)) !important;
+}
+.maik-game-dialog-compacto .maik-game-character {
+  display: none !important;
+}
+.maik-game-dialog-compacto .maik-game-bubble::before {
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .maik-game-dialog-movil { transition: none; }
+}
+/* Durante el recorrido, espacio extra al final para poder subir
+   cualquier elemento y dejar lugar al cuadro de MAIK */
+body.mak-onboarding-lock {
+  padding-bottom: 75vh !important;
+}
+@media (max-height: 700px) {
+  .maik-game-dialog-compacto .maik-game-panel { padding: 12px 14px; }
+  .maik-game-dialog-compacto .maik-game-title { font-size: 20px !important; }
+  .maik-game-dialog-compacto .maik-game-subtitle { font-size: 14px !important; }
+  .maik-game-dialog-compacto .maik-game-text { font-size: 14px !important; line-height: 1.4 !important; }
+  .maik-game-dialog-compacto .maik-game-bubble { padding: 10px 12px; }
+}

@@ -168,3 +168,4 @@ UI:
 - `/api/rutina/motor` indica qué motor está activo; `/api/rutina/diagnostico` prueba todo el flujo sin cambiar la rutina (en producción solo administradores).
 - `supabase/migrations/20261123_finalizar_pesos_libres.sql`: `finalizar_mi_entrenamiento_app()` ya no exige pesos múltiplos de 2,5 kg.
 - Motor: repeticiones realistas en ejercicios con peso corporal (p. ej. dominadas 5-8 en intermedio, no 15-20); sin zancadas ni búlgara para principiantes con obesidad o de 55+ años; un solo ejercicio lumbar aislado por día.
+- Guía de MAIK dinámica (`AppWelcomeGuide`): sube el elemento señalado cerca del borde superior y coloca el cuadro debajo (o arriba) sin taparlo; si no hay espacio, usa una versión compacta sin el personaje. Probado en PC, tablet y celular: el cuadro no cubre el elemento señalado (salvo un 24 % del panel "Hoy" en pantallas de 360×640).

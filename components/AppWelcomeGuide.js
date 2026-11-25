@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -108,11 +108,44 @@ function obtenerRect(selector) {
   }
 }
 
+const MARGEN = 12
+const ALTO_ETIQUETA = 34 // etiqueta "ESTÁS AQUÍ" sobre el recuadro
+
+/**
+ * Decide dónde va el cuadro de MAIK para no tapar lo que señala:
+ * debajo del elemento si cabe, si no arriba; si no cabe en ningún lado,
+ * en el lado con más espacio y en versión compacta (sin el personaje).
+ */
+function calcularUbicacion(rect, altoDialogo, altoCompacto) {
+  const vh = window.innerHeight
+  if (!rect) return { modo: 'centro', compacto: false }
+
+  const abajo = vh - (rect.top + rect.height)
+  const arriba = rect.top - ALTO_ETIQUETA
+
+  for (const [alto, compacto] of [[altoDialogo, false], [altoCompacto, true]]) {
+    if (abajo >= alto + MARGEN * 2) {
+      return { modo: 'fijo', top: rect.top + rect.height + MARGEN, compacto }
+    }
+    if (arriba >= alto + MARGEN * 2) {
+      return { modo: 'fijo', top: arriba - alto - MARGEN, compacto }
+    }
+  }
+
+  // No cabe sin tapar: lado con más espacio, compacto
+  return abajo >= arriba
+    ? { modo: 'fijo', top: Math.max(MARGEN, vh - altoCompacto - MARGEN), compacto: true }
+    : { modo: 'fijo', top: MARGEN, compacto: true }
+}
+
 export default function AppWelcomeGuide({ clienteId }) {
   const [abierto, setAbierto] = useState(false)
   const [primeraVez, setPrimeraVez] = useState(false)
   const [paso, setPaso] = useState(0)
   const [rect, setRect] = useState(null)
+  const [ubicacion, setUbicacion] = useState({ modo: 'centro', compacto: false })
+  const dialogoRef = useRef(null)
+  const altosRef = useRef({ normal: 0, compacto: 0 })
 
   const storageKey = useMemo(
     () => `mak-clientes-onboarding-v6-${clienteId}`,
@@ -163,9 +196,13 @@ export default function AppWelcomeGuide({ clienteId }) {
     if (selector) {
       const el = document.querySelector(selector)
       if (el) {
-        el.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
+        // Lleva el elemento cerca de la parte superior para dejar
+        // espacio debajo al cuadro de MAIK
+        const r = el.getBoundingClientRect()
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + r.top - (ALTO_ETIQUETA + MARGEN + 8)),
+          behavior: reduce ? 'auto' : 'smooth',
         })
       }
     }
@@ -183,6 +220,28 @@ export default function AppWelcomeGuide({ clienteId }) {
       document.body.classList.remove('mak-onboarding-lock')
     }
   }, [abierto, paso])
+
+  // Reubica el cuadro cada vez que cambia el elemento señalado
+  useEffect(() => {
+    if (!abierto) return
+    const dialogo = dialogoRef.current
+    if (!dialogo) return
+
+    const medir = () => {
+      // Mide el alto normal y el compacto (sin personaje)
+      const previo = dialogo.classList.contains('maik-game-dialog-compacto')
+      dialogo.classList.remove('maik-game-dialog-compacto')
+      const normal = dialogo.offsetHeight
+      dialogo.classList.add('maik-game-dialog-compacto')
+      const compacto = dialogo.offsetHeight
+      if (!previo) dialogo.classList.remove('maik-game-dialog-compacto')
+      altosRef.current = { normal, compacto }
+      setUbicacion(calcularUbicacion(rect, normal, compacto))
+    }
+
+    const id = requestAnimationFrame(medir)
+    return () => cancelAnimationFrame(id)
+  }, [abierto, rect, paso])
 
   useEffect(() => {
     if (!abierto) return
@@ -285,7 +344,19 @@ export default function AppWelcomeGuide({ clienteId }) {
             </>
           )}
 
-          <section className="maik-game-dialog">
+          <section
+            ref={dialogoRef}
+            className={[
+              'maik-game-dialog',
+              ubicacion.modo === 'fijo' ? 'maik-game-dialog-movil' : '',
+              ubicacion.compacto ? 'maik-game-dialog-compacto' : '',
+            ].join(' ')}
+            style={
+              ubicacion.modo === 'fijo'
+                ? { top: `${Math.round(ubicacion.top)}px`, bottom: 'auto' }
+                : undefined
+            }
+          >
             <div className="maik-game-character">
               <MaikPose pose={actual.pose} size={132} />
             </div>
