@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { esAdministrador } from '@/lib/rutinas/servidor'
 import AdminEquipamiento from '@/components/AdminEquipamiento'
+import AdminNav from '@/components/AdminNav'
 
 export const metadata = {
   title: 'Equipamiento | MAK FITNESS',
@@ -30,6 +31,7 @@ export default async function AdminEquipamientoPage() {
             <p className="mt-1 max-w-xl text-sm text-zinc-300">
               Activa, desactiva o agrega máquinas. Las próximas rutinas que generen los socios usarán solo el equipo activo.
             </p>
+            <AdminNav actual="/admin/equipamiento" />
           </div>
         </div>
       </header>

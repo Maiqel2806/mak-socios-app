@@ -91,7 +91,8 @@ export async function POST(request) {
     .update({
       clave_cambiada: true,
       cambio_clave_obligatorio: false,
-      aviso_cambio_clave_visto: true
+      aviso_cambio_clave_visto: true,
+      ultimo_cambio_clave_at: new Date().toISOString()
     })
     .eq('auth_user_id', usuario.id)
 

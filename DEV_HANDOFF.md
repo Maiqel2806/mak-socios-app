@@ -175,3 +175,10 @@ UI:
 - La cuenta de la app se crea con la cédula como contraseña inicial (o una clave aleatoria si la cédula no era válida). Si luego se corregía la cédula en el sistema administrativo, Supabase Auth conservaba la contraseña anterior y el socio no podía entrar.
 - `app/api/auth/login/route.js` (`sincronizarClaveInicial`): si el inicio de sesión falla, el socio nunca cambió su contraseña (`clave_cambiada = false`) y escribió la cédula que hoy tiene `miembros.cedula`, se actualiza su contraseña de Auth a esa cédula (sin puntos, espacios ni guiones, igual que `lib/mak-provisionar-socio.mjs` del sistema administrativo), se marca `tipo_clave_inicial = 'cedula'` y se reintenta. Si ya cambió su contraseña, no se toca nada.
 - Login: texto de ayuda "¿Primera vez? Tu contraseña inicial es tu número de cédula."
+
+## Cambios 2026-11-26 (11): accesos de socios y restablecer contraseña
+
+- Nueva sección de administración `/admin/accesos` (solo códigos de `MAK_ADMIN_CODIGOS`), con navegación compartida `AdminNav` junto a Equipamiento. En inicio el botón se llama "Administración".
+- Buscar socio por código, cédula o nombre. Diagnóstico de lo que impide entrar: sin cuenta, cuenta desactivada, identidad de Auth faltante o con marca de otro socio, correo técnico distinto o sin confirmar, usuario bloqueado, cédula inválida, contraseña personal o temporal.
+- "Restablecer contraseña" (`POST /api/admin/accesos`): pone la cédula (sin puntos, espacios ni guiones) como contraseña; si la cédula no es válida genera una clave temporal `MAK-XXXXXX` y obliga a cambiarla. También repara la identidad (marca de socio, correo confirmado, desbloqueo). Deja `clave_cambiada = false`. Botón para copiar el mensaje para el socio. "Activar acceso" si la cuenta estaba desactivada.
+- `cambiar-password` ahora guarda `ultimo_cambio_clave_at`.

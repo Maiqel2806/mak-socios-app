@@ -240,10 +240,10 @@ export default async function InicioPage() {
           </div>
           <div className="mak-home-actions">
             {permisoAdmin?.ok && (
-              <Link href="/admin/equipamiento"
-                aria-label="Equipamiento del gimnasio" title="Equipamiento del gimnasio"
+              <Link href="/admin/accesos"
+                aria-label="Administración" title="Administración: accesos de socios y equipamiento"
                 className="flex h-9 items-center gap-1.5 rounded-xl border border-cyan-300/40 bg-cyan-400/15 px-3 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25">
-                <Dumbbell size={15} aria-hidden="true" /> <span className="hidden sm:inline">Equipamiento</span>
+                <Dumbbell size={15} aria-hidden="true" /> <span className="hidden sm:inline">Administración</span>
               </Link>
             )}
               <Link href="/configuracion"
