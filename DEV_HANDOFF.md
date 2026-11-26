@@ -169,3 +169,9 @@ UI:
 - `supabase/migrations/20261123_finalizar_pesos_libres.sql`: `finalizar_mi_entrenamiento_app()` ya no exige pesos múltiplos de 2,5 kg.
 - Motor: repeticiones realistas en ejercicios con peso corporal (p. ej. dominadas 5-8 en intermedio, no 15-20); sin zancadas ni búlgara para principiantes con obesidad o de 55+ años; un solo ejercicio lumbar aislado por día.
 - Guía de MAIK dinámica (`AppWelcomeGuide`): sube el elemento señalado cerca del borde superior y coloca el cuadro debajo (o arriba) sin taparlo; si no hay espacio, usa una versión compacta sin el personaje. Probado en PC, tablet y celular: el cuadro no cubre el elemento señalado (salvo un 24 % del panel "Hoy" en pantallas de 360×640).
+
+## Cambios 2026-11-25 (10): cédula corregida en el sistema administrativo
+
+- La cuenta de la app se crea con la cédula como contraseña inicial (o una clave aleatoria si la cédula no era válida). Si luego se corregía la cédula en el sistema administrativo, Supabase Auth conservaba la contraseña anterior y el socio no podía entrar.
+- `app/api/auth/login/route.js` (`sincronizarClaveInicial`): si el inicio de sesión falla, el socio nunca cambió su contraseña (`clave_cambiada = false`) y escribió la cédula que hoy tiene `miembros.cedula`, se actualiza su contraseña de Auth a esa cédula (sin puntos, espacios ni guiones, igual que `lib/mak-provisionar-socio.mjs` del sistema administrativo), se marca `tipo_clave_inicial = 'cedula'` y se reintenta. Si ya cambió su contraseña, no se toca nada.
+- Login: texto de ayuda "¿Primera vez? Tu contraseña inicial es tu número de cédula."

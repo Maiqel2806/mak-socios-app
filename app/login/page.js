@@ -150,6 +150,9 @@ export default function LoginPage() {
               <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
                 Ingresa con el código que te dieron en recepción y tu contraseña.
               </p>
+              <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                ¿Primera vez? Tu contraseña inicial es tu número de cédula.
+              </p>
 
               <form onSubmit={iniciarSesion} className="mt-6 space-y-4" noValidate>
                 <div>
