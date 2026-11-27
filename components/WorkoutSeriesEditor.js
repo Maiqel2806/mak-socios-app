@@ -24,6 +24,7 @@ import {
   unoRM,
 } from '@/lib/progresion'
 
+import { modoRegistro, repeticionesBase } from '@/lib/registroSeries'
 import PesoSelector from './PesoSelector'
 
 import {
@@ -44,16 +45,6 @@ function incrementoDe(ejercicio) {
     : INCREMENTO_POR_DEFECTO_KG
 }
 
-function esActividadPorTiempo(ejercicio) {
-  const objetivo = String(
-    ejercicio?.repeticiones_objetivo || ''
-  )
-
-  return (
-    /(^|[^a-z])(seg|segundos|min|minutos)($|[^a-z])/i.test(objetivo) ||
-    String(ejercicio?.grupo_muscular || '').toLowerCase() === 'cardio'
-  )
-}
 
 function texto(valor) {
   return valor === null || valor === undefined
@@ -114,12 +105,21 @@ export default function WorkoutSeriesEditor({
     total >= 1 &&
     total <= 30
 
-  const actividad = esActividadPorTiempo(ejercicio)
+  // tiempo: solo marcar · corporal: solo repeticiones · carga: peso + reps
+  const modo = modoRegistro(ejercicio)
+  const actividad = modo === 'tiempo'
+  const corporal = modo === 'corporal'
+  const [conLastre, setConLastre] = useState(() =>
+    corporal &&
+    (Array.isArray(ejercicio?.series) ? ejercicio.series : [])
+      .some((serie) => Number(serie?.peso_kg) > 0)
+  )
+  const mostrarPeso = !actividad && (!corporal || conLastre)
   const incremento = incrementoDe(ejercicio)
 
   const [selectorFila, setSelectorFila] = useState(null)
 
-  const sugerencia = actividad
+  const sugerencia = modo !== 'carga'
     ? null
     : sugerirCarga({
         ultimaSesion: historial?.ultima,
@@ -202,7 +202,11 @@ export default function WorkoutSeriesEditor({
   async function guardarSerie(fila, completar) {
     if (!cantidadValida || guardando !== null) return
 
-    const peso = actividad ? null : numero(fila.peso)
+    const peso = actividad
+      ? null
+      : corporal && !conLastre
+        ? 0
+        : numero(fila.peso)
     const reps = actividad ? null : numero(fila.reps, true)
 
     if (!actividad) {
@@ -213,8 +217,9 @@ export default function WorkoutSeriesEditor({
       ) {
         setErrores((actual) => ({
           ...actual,
-          [fila.numero]:
-            'Registra un peso válido y las repeticiones realizadas. Usa 0 kg si no añadiste carga externa.',
+          [fila.numero]: corporal && !conLastre
+            ? 'Anota cuántas repeticiones hiciste.'
+            : 'Registra el peso y las repeticiones que hiciste.',
         }))
         return
       }
@@ -248,6 +253,8 @@ export default function WorkoutSeriesEditor({
           peso_kg: peso === null ? null : redondear(peso, 2),
           repeticiones: reps,
           actividad_sin_repeticiones: actividad,
+          modo,
+          repeticiones_respaldo: repeticionesBase(ejercicio),
           completada: completar,
         }),
       })
@@ -364,7 +371,7 @@ export default function WorkoutSeriesEditor({
 
           {cantidadValida && (
             <>
-              {!actividad && historial?.ultima ? (
+              {modo === 'carga' && historial?.ultima ? (
                 <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-sm leading-6 text-cyan-950 dark:border-cyan-500/20 dark:bg-cyan-500/[0.07] dark:text-cyan-100">
                   <p>
                     <span className="font-bold">Última vez:</span> {resumenSeries(historial.ultima.series)}
@@ -384,8 +391,10 @@ export default function WorkoutSeriesEditor({
               ) : (
                 <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                   {actividad
-                    ? 'Marca la actividad cuando la hayas realizado.'
-                    : 'Anota el peso que usaste y tus repeticiones. Puedes escribir cualquier peso (ej. 21, 22,5 o 24 kg). Al completar una serie empieza el descanso.'}
+                    ? 'Se mide por tiempo: haz la actividad y márcala como realizada. No necesitas anotar peso ni repeticiones.'
+                    : corporal
+                      ? 'Es con tu propio peso: solo anota cuántas repeticiones hiciste. Al completar una serie empieza el descanso.'
+                      : 'Anota el peso que usaste y tus repeticiones. Puedes escribir cualquier peso (ej. 21, 22,5 o 24 kg). Al completar una serie empieza el descanso.'}
                 </p>
               )}
 
@@ -417,11 +426,12 @@ export default function WorkoutSeriesEditor({
                   </div>
 
                   {!actividad && (
-                    <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className={`mt-3 grid gap-3 ${mostrarPeso ? 'grid-cols-2' : 'grid-cols-1'}`}>
 
+                      {mostrarPeso && (
                       <div>
                         <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
-                          Peso (kg)
+                          {corporal ? 'Peso extra (kg)' : 'Peso (kg)'}
                         </span>
 
                         <div className="flex h-12 items-stretch overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 focus-within:border-[#02AFBB] focus-within:ring-2 focus-within:ring-cyan-500/15 dark:border-white/10 dark:bg-zinc-800">
@@ -458,6 +468,7 @@ export default function WorkoutSeriesEditor({
                           </button>
                         </div>
                       </div>
+                      )}
 
                       <div>
                         <span className="mb-1.5 block text-sm font-bold text-zinc-600 dark:text-zinc-300">
@@ -501,7 +512,18 @@ export default function WorkoutSeriesEditor({
                     </div>
                   )}
 
-                  {!actividad &&
+                  {corporal && fila.numero === 1 && !fila.completada && (
+                    <button
+                      type="button"
+                      disabled={guardando !== null}
+                      onClick={() => setConLastre((v) => !v)}
+                      className="mak-interactive mt-2 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold text-[#028894] hover:bg-cyan-50 disabled:opacity-50 dark:text-cyan-300 dark:hover:bg-cyan-500/10"
+                    >
+                      {conLastre ? 'Quitar peso extra' : '¿Usaste peso extra (chaleco, disco)? Añadirlo'}
+                    </button>
+                  )}
+
+                  {modo === 'carga' &&
                     pesoSugerido &&
                     !fila.completada &&
                     !fila.peso &&
@@ -530,7 +552,7 @@ export default function WorkoutSeriesEditor({
                       >
                         <Copy size={13} />
                         Igual que la serie {fila.numero - 1}
-                        {filas[fila.numero - 2]?.peso ? ` (${filas[fila.numero - 2].peso} kg)` : ''}
+                        {mostrarPeso && filas[fila.numero - 2]?.peso ? ` (${filas[fila.numero - 2].peso} kg)` : ''}
                       </button>
                     )}
 

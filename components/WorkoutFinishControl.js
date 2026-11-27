@@ -8,19 +8,10 @@ import {
   Trophy,
 } from 'lucide-react'
 
-function esActividad(ejercicio) {
-  const objetivo = String(
-    ejercicio?.repeticiones_objetivo || ''
-  )
+import { modoRegistro } from '@/lib/registroSeries'
 
-  return (
-    /(^|[^a-z])(seg|segundos|min|minutos)($|[^a-z])/i.test(
-      objetivo
-    ) ||
-    String(
-      ejercicio?.grupo_muscular || ''
-    ).trim().toLowerCase() === 'cardio'
-  )
+function esActividad(ejercicio) {
+  return modoRegistro(ejercicio) === 'tiempo'
 }
 
 function ejercicioValido(ejercicio) {

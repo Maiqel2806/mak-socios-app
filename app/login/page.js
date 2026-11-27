@@ -28,12 +28,24 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [mostrarAyuda, setMostrarAyuda] = useState(false)
   const [mayusculas, setMayusculas] = useState(false)
+  const [modoAcceso, setModoAcceso] = useState('socio') // 'socio' | 'entrenador'
+  const esEntrenador = modoAcceso === 'entrenador'
+
+  function cambiarModo(modo) {
+    setModoAcceso(modo)
+    setCodigo('')
+    setPassword('')
+    setError('')
+    setMostrarAyuda(false)
+  }
 
   async function iniciarSesion(evento) {
     evento.preventDefault()
 
     if (!codigo.trim() || !password) {
-      setError('Escribe tu código de cliente y tu contraseña.')
+      setError(esEntrenador
+        ? 'Escribe tu usuario y tu contraseña.'
+        : 'Escribe tu código de cliente y tu contraseña.')
       return
     }
 
@@ -41,15 +53,16 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const respuesta = await fetch('/api/auth/login', {
+      const respuesta = await fetch(esEntrenador ? '/api/auth/login-staff' : '/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          codigo: codigo.trim(),
-          password,
-        }),
+        body: JSON.stringify(
+          esEntrenador
+            ? { usuario: codigo.trim(), password }
+            : { codigo: codigo.trim(), password }
+        ),
       })
 
       const resultado = await respuesta.json()
@@ -60,7 +73,7 @@ export default function LoginPage() {
         )
       }
 
-      router.replace('/inicio')
+      router.replace(esEntrenador ? '/entrenador' : '/inicio')
       router.refresh()
     } catch (errorLogin) {
       setError(errorLogin.message)
@@ -146,18 +159,50 @@ export default function LoginPage() {
             </div>
 
             <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_24px_60px_rgba(13,20,23,0.12)] dark:border-white/10 dark:bg-[#111a1e] dark:shadow-[0_25px_80px_rgba(0,0,0,0.45)] sm:p-8">
-              <h2 className="mak-display text-[2rem] leading-none">¡Qué bueno verte!</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                Ingresa con el código que te dieron en recepción y tu contraseña.
-              </p>
-              <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                ¿Primera vez? Tu contraseña inicial es tu número de cédula.
-              </p>
+              <div role="tablist" aria-label="Tipo de acceso" className="mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-zinc-100 p-1 dark:bg-white/[0.06]">
+                {[
+                  ['socio', 'Soy socio'],
+                  ['entrenador', 'Soy entrenador'],
+                ].map(([valor, texto]) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    role="tab"
+                    aria-selected={modoAcceso === valor}
+                    onClick={() => cambiarModo(valor)}
+                    className={`min-h-11 rounded-xl text-[15px] font-bold transition ${
+                      modoAcceso === valor
+                        ? 'bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white'
+                        : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                    }`}
+                  >
+                    {texto}
+                  </button>
+                ))}
+              </div>
+
+              <h2 className="mak-display text-[2rem] leading-none">
+                {esEntrenador ? 'Modo entrenador' : '¡Qué bueno verte!'}
+              </h2>
+              {esEntrenador ? (
+                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                  Usa el mismo usuario y contraseña con los que entras al sistema administrativo de MAK.
+                </p>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                    Ingresa con el código que te dieron en recepción y tu contraseña.
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                    ¿Primera vez? Tu contraseña inicial es tu número de cédula.
+                  </p>
+                </>
+              )}
 
               <form onSubmit={iniciarSesion} className="mt-6 space-y-4" noValidate>
                 <div>
                   <label htmlFor="mak-codigo" className="mb-1.5 block text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                    Código de cliente
+                    {esEntrenador ? 'Usuario' : 'Código de cliente'}
                   </label>
                   <div className="relative">
                     <UserRound size={19} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
@@ -165,15 +210,15 @@ export default function LoginPage() {
                       id="mak-codigo"
                       type="text"
                       autoComplete="username"
-                      autoCapitalize="characters"
+                      autoCapitalize={esEntrenador ? 'none' : 'characters'}
                       spellCheck={false}
                       enterKeyHint="next"
                       maxLength={50}
                       value={codigo}
                       onChange={(evento) => setCodigo(evento.target.value)}
-                      placeholder="Ej. MAK0123"
+                      placeholder={esEntrenador ? 'Tu usuario del sistema' : 'Ej. MAK0123'}
                       aria-invalid={Boolean(error) && !codigo.trim()}
-                      className="mak-auth-input min-h-[56px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-12 pr-4 text-base uppercase text-zinc-950 outline-none transition placeholder:normal-case placeholder:text-zinc-400 focus:border-[#02AFBB] focus:bg-white focus:ring-4 focus:ring-cyan-500/10 dark:border-white/12 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/40 dark:focus:border-cyan-400"
+                      className={`mak-auth-input min-h-[56px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-12 pr-4 text-base ${esEntrenador ? '' : 'uppercase'} text-zinc-950 outline-none transition placeholder:normal-case placeholder:text-zinc-400 focus:border-[#02AFBB] focus:bg-white focus:ring-4 focus:ring-cyan-500/10 dark:border-white/12 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/40 dark:focus:border-cyan-400`}
                     />
                   </div>
                 </div>
@@ -233,12 +278,14 @@ export default function LoginPage() {
                   onClick={() => setMostrarAyuda((anterior) => !anterior)}
                   className="min-h-10 px-3 text-sm font-semibold text-cyan-700 transition hover:underline dark:text-cyan-300"
                 >
-                  ¿Olvidaste tu contraseña o tu código?
+                  {esEntrenador ? '¿Olvidaste tu contraseña?' : '¿Olvidaste tu contraseña o tu código?'}
                 </button>
 
                 {mostrarAyuda && (
                   <p className="mt-3 rounded-2xl bg-cyan-50 p-3 text-left text-sm leading-6 text-cyan-900 dark:bg-cyan-500/10 dark:text-cyan-100">
-                    Acércate a recepción de MAK FITNESS: te ayudamos a recuperar el acceso en minutos.
+                    {esEntrenador
+                      ? 'Pide al administrador que restablezca tu usuario en el sistema administrativo.'
+                      : 'Acércate a recepción de MAK FITNESS: te ayudamos a recuperar el acceso en minutos.'}
                   </p>
                 )}
               </div>

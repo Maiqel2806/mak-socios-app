@@ -182,3 +182,10 @@ UI:
 - Buscar socio por código, cédula o nombre. Diagnóstico de lo que impide entrar: sin cuenta, cuenta desactivada, identidad de Auth faltante o con marca de otro socio, correo técnico distinto o sin confirmar, usuario bloqueado, cédula inválida, contraseña personal o temporal.
 - "Restablecer contraseña" (`POST /api/admin/accesos`): pone la cédula (sin puntos, espacios ni guiones) como contraseña; si la cédula no es válida genera una clave temporal `MAK-XXXXXX` y obliga a cambiarla. También repara la identidad (marca de socio, correo confirmado, desbloqueo). Deja `clave_cambiada = false`. Botón para copiar el mensaje para el socio. "Activar acceso" si la cuenta estaba desactivada.
 - `cambiar-password` ahora guarda `ultimo_cambio_clave_at`.
+
+## Cambios 2026-11-27 (12): registro de series por tipo y modo entrenador
+
+- `lib/registroSeries.js` → `modoRegistro(ejercicio)`: 'tiempo' (cardio, planchas, prescripción en seg/min: solo marcar), 'corporal' (dead bug, superman, crunch, flexiones, burpees, dominadas…: solo repeticiones, peso extra opcional; se guarda 0 kg) y 'carga' (peso + reps). Reconoce ejercicios v4 y del sistema anterior por nombre, grupo y equipo. Lo usan `WorkoutSeriesEditor` y `WorkoutFinishControl`.
+- `PATCH /api/entrenamiento`: si la base clasifica distinto (p. ej. "Escaladora" antigua sin "min"), reintenta con el formato que espera la función SQL (0 kg + reps, o sin datos).
+- Modo entrenador: pestaña "Soy entrenador" en el login (usuario y contraseña del sistema administrativo, tabla `admin_usuarios`, roles activos dueno/empleado/entrenador). `POST /api/auth/login-staff`. Página `/entrenador`: simulador de rutinas (perfil hipotético, no se guarda), biblioteca de ejercicios con disponibilidad y "Ver ejecución", y buzón de sugerencias (`app_sugerencias_entrenadores`, migración `20261127_modo_entrenador.sql`). El dueño ve todas, cambia estado y responde.
+- `esAdministrador`: el usuario del sistema con rol `dueno` también es administrador de la app (sin cuenta de socio). Las páginas de socio redirigen al personal a `/entrenador`.

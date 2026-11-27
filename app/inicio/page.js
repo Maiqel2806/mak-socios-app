@@ -13,6 +13,7 @@ import {
 import {
   createClient,
 } from '@/lib/supabase/server'
+import { redirigirSiStaff } from '@/lib/staff'
 
 import {
   createAdminClient,
@@ -75,6 +76,7 @@ export default async function InicioPage() {
     !cuenta ||
     !cuenta.activo
   ) {
+    await redirigirSiStaff(supabase)
     redirect('/login')
   }
 

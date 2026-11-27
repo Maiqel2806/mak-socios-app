@@ -618,18 +618,35 @@ export async function PATCH(request) {
       )
     }
 
-    const { data, error } = await supabase.rpc(
-      'guardar_mi_serie_entrenamiento_app',
-      {
-        p_entrenamiento_ejercicio_id: id,
-        p_numero_serie: serie,
-        p_peso_kg: pesoNormalizado,
-        p_repeticiones: reps,
-        p_duracion_seg: null,
-        p_rir: null,
-        p_completada: body.completada,
-      }
-    )
+    const guardar = (pesoKg, repeticiones) =>
+      supabase.rpc(
+        'guardar_mi_serie_entrenamiento_app',
+        {
+          p_entrenamiento_ejercicio_id: id,
+          p_numero_serie: serie,
+          p_peso_kg: pesoKg,
+          p_repeticiones: repeticiones,
+          p_duracion_seg: null,
+          p_rir: null,
+          p_completada: body.completada,
+        }
+      )
+
+    let { data, error } = await guardar(pesoNormalizado, reps)
+
+    // La app y la base de datos pueden clasificar distinto un ejercicio
+    // (por ejemplo, una "Escaladora" del sistema anterior sin "min" en la
+    // prescripción). Se reintenta con el formato que la base espera.
+    const msgPrimero = String(error?.message || '')
+    if (error && actividad && msgPrimero.includes('DATOS_SERIE_INCOMPLETOS')) {
+      const respaldo = Number(body.repeticiones_respaldo)
+      ;({ data, error } = await guardar(
+        0,
+        Number.isSafeInteger(respaldo) && respaldo > 0 ? Math.min(respaldo, 999) : 1
+      ))
+    } else if (error && !actividad && msgPrimero.includes('DATOS_ACTIVIDAD_INVALIDOS')) {
+      ;({ data, error } = await guardar(null, null))
+    }
 
     if (error) {
       const mensaje = String(error.message || '')
