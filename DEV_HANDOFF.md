@@ -187,5 +187,11 @@ UI:
 
 - `lib/registroSeries.js` → `modoRegistro(ejercicio)`: 'tiempo' (cardio, planchas, prescripción en seg/min: solo marcar), 'corporal' (dead bug, superman, crunch, flexiones, burpees, dominadas…: solo repeticiones, peso extra opcional; se guarda 0 kg) y 'carga' (peso + reps). Reconoce ejercicios v4 y del sistema anterior por nombre, grupo y equipo. Lo usan `WorkoutSeriesEditor` y `WorkoutFinishControl`.
 - `PATCH /api/entrenamiento`: si la base clasifica distinto (p. ej. "Escaladora" antigua sin "min"), reintenta con el formato que espera la función SQL (0 kg + reps, o sin datos).
-- Modo entrenador: pestaña "Soy entrenador" en el login (usuario y contraseña del sistema administrativo, tabla `admin_usuarios`, roles activos dueno/empleado/entrenador). `POST /api/auth/login-staff`. Página `/entrenador`: simulador de rutinas (perfil hipotético, no se guarda), biblioteca de ejercicios con disponibilidad y "Ver ejecución", y buzón de sugerencias (`app_sugerencias_entrenadores`, migración `20261127_modo_entrenador.sql`). El dueño ve todas, cambia estado y responde.
-- `esAdministrador`: el usuario del sistema con rol `dueno` también es administrador de la app (sin cuenta de socio). Las páginas de socio redirigen al personal a `/entrenador`.
+- Herramientas de entrenador en `/entrenador` (simulador de rutinas, biblioteca de ejercicios, buzón de sugerencias `app_sugerencias_entrenadores`, migración `20261127_modo_entrenador.sql`). Acceden los colaboradores activos y los códigos de `MAK_ADMIN_CODIGOS` (estos gestionan las sugerencias).
+
+## Cambios 2026-11-27 (13): colaboradores con Plan Entrenador
+
+- Sin pestañas en el login: todos entran con código y contraseña.
+- `20261127_colaboradores.sql`: tabla `colaboradores` (cargo, fecha de ingreso, jornada, emergencia, `activo`, `acceso_app`, `miembro_id`). Cada colaborador usa un registro interno en `miembros` con `tipo_registro = 'colaborador'`, oculto al sistema administrativo con una política RLS restrictiva (el propio colaborador sí lo ve). `socio_puede_usar_beneficios_app()` envuelve la original (`..._base`) y devuelve true para colaboradores activos con acceso: Plan Entrenador sin membresías ni caja.
+- App: `lib/colaborador.js` (`colaboradorDeMiembro`, `membresiaPlanEntrenador`); inicio muestra "Plan Entrenador · Ilimitado" ($0, sin renovar) y el botón "Entrenador". `lib/staff.js` ahora se basa en la sesión de socio.
+- Sistema administrativo (otro repositorio): sección `/colaboradores` + `POST/PATCH /api/admin/colaboradores` (crea el registro interno y la cuenta de la app con la cédula como clave; si la cédula ya es de un socio, usa su registro y desactivarlo como colaborador no le quita su acceso de socio).

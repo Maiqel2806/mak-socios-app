@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
-import { redirigirSiStaff } from '@/lib/staff'
 import ProgressSummaryDashboard from '@/components/ProgressSummaryDashboard'
 import { cargarHistorialSocio } from '@/lib/historial'
 
@@ -27,7 +26,6 @@ export default async function ProgresoPage() {
       .maybeSingle()
 
   if (errorCuenta || !cuenta?.activo) {
-    await redirigirSiStaff(supabase)
     redirect('/login')
   }
 

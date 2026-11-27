@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import { perfilStaff } from '@/lib/staff'
@@ -24,7 +24,10 @@ export default async function EntrenadorPage() {
         <div className="mx-auto w-full max-w-4xl px-4 py-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-cyan-300">MAK FITNESS · Modo entrenador</p>
+              <Link href="/inicio" className="inline-flex items-center gap-1.5 text-sm font-bold text-cyan-300 hover:text-white">
+                <ArrowLeft size={16} /> Volver
+              </Link>
+              <p className="mt-3 text-sm font-bold text-cyan-300">{staff.cargo} · MAK FITNESS</p>
               <h1 className="mak-display mt-1 text-3xl text-white sm:text-4xl">Hola, {staff.nombre.split(' ')[0]}</h1>
               <p className="mt-1 max-w-xl text-[15px] text-zinc-300">
                 Prueba las rutinas que genera la app, revisa los ejercicios y envía tus sugerencias de mejora.
@@ -32,12 +35,6 @@ export default async function EntrenadorPage() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <ThemeToggle compacto />
-              <form action="/api/auth/logout" method="post">
-                <button type="submit" aria-label="Cerrar sesión" title="Cerrar sesión"
-                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20">
-                  <LogOut size={18} />
-                </button>
-              </form>
             </div>
           </div>
 

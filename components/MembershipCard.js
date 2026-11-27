@@ -336,8 +336,13 @@ export default function MembershipCard({
 
   // Menos de 7 días:
   // 1 a 6 días.
+  // Plan Entrenador (colaboradores): sin vencimiento ni pagos
+  const ilimitada =
+    Boolean(membresia?.ilimitada)
+
   const vigenciaUrgente =
     activa &&
+    !ilimitada &&
     dias < 7
 
   // Con más de 7 días mostramos
@@ -704,7 +709,7 @@ export default function MembershipCard({
                               : 'text-5xl font-black text-cyan-400'
                           }
                         >
-                          {dias}
+                          {ilimitada ? 'Ilimitado' : dias}
                         </span>
 
                         <span
@@ -714,9 +719,11 @@ export default function MembershipCard({
                               : 'pb-1 text-sm font-bold text-zinc-300'
                           }
                         >
-                          {dias === 1
-                            ? 'día restante'
-                            : 'días restantes'}
+                          {ilimitada
+                            ? 'mientras seas parte del equipo'
+                            : dias === 1
+                              ? 'día restante'
+                              : 'días restantes'}
                         </span>
 
                       </div>
@@ -750,9 +757,11 @@ export default function MembershipCard({
                       </p>
 
                       <p className="mt-1 font-bold text-zinc-950 dark:text-white">
-                        {fecha(
-                          membresia.fecha_fin
-                        )}
+                        {ilimitada
+                          ? 'Sin vencimiento'
+                          : fecha(
+                              membresia.fecha_fin
+                            )}
                       </p>
 
                     </div>
@@ -803,6 +812,7 @@ export default function MembershipCard({
                   )}
 
 
+                  {!ilimitada && (
                   <button
                     type="button"
                     onClick={
@@ -822,6 +832,7 @@ export default function MembershipCard({
                       ? 'Renovar membresía ahora'
                       : 'Renovar membresía'}
                   </button>
+                  )}
 
                 </>
 

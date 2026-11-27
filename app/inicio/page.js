@@ -8,12 +8,13 @@ import {
   LogOut,
   ChevronDown,
   Dumbbell,
+  Sparkles,
 } from 'lucide-react'
 
 import {
   createClient,
 } from '@/lib/supabase/server'
-import { redirigirSiStaff } from '@/lib/staff'
+import { colaboradorDeMiembro, membresiaPlanEntrenador } from '@/lib/colaborador'
 
 import {
   createAdminClient,
@@ -76,7 +77,6 @@ export default async function InicioPage() {
     !cuenta ||
     !cuenta.activo
   ) {
-    await redirigirSiStaff(supabase)
     redirect('/login')
   }
 
@@ -132,8 +132,17 @@ export default async function InicioPage() {
   let membresia =
     respuestaMembresia.data
 
-  const errorMembresia =
+  let errorMembresia =
     respuestaMembresia.error
+
+  // Colaboradores activos: Plan Entrenador ($0, vigencia ilimitada)
+  const colaborador =
+    await colaboradorDeMiembro(cuenta.miembro_id)
+
+  if (colaborador?.vigente) {
+    membresia = membresiaPlanEntrenador(colaborador)
+    errorMembresia = null
+  }
 
   const metodosPago =
     respuestaPagos.data
@@ -238,9 +247,20 @@ export default async function InicioPage() {
           <div className="mak-home-welcome">
             <p className="mak-home-kicker"><span className="mak-home-kicker-dot" />MAK FITNESS</p>
             <h1>{saludoHora}, {nombreSocio}</h1>
-            <p className="mak-home-slogan">Entrenamiento real, para resultados reales.</p>
+            <p className="mak-home-slogan">
+              {colaborador?.vigente
+                ? `${colaborador.cargo_nombre} · Equipo MAK FITNESS`
+                : 'Entrenamiento real, para resultados reales.'}
+            </p>
           </div>
           <div className="mak-home-actions">
+            {(colaborador?.vigente || permisoAdmin?.ok) && (
+              <Link href="/entrenador"
+                aria-label="Herramientas de entrenador" title="Herramientas de entrenador: simulador, ejercicios y sugerencias"
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-cyan-300/40 bg-cyan-400/15 px-3 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25">
+                <Sparkles size={15} aria-hidden="true" /> <span className="hidden sm:inline">Entrenador</span>
+              </Link>
+            )}
             {permisoAdmin?.ok && (
               <Link href="/admin/accesos"
                 aria-label="Administración" title="Administración: accesos de socios y equipamiento"

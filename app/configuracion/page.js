@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { KeyRound, Info, LogOut, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { redirigirSiStaff } from '@/lib/staff'
 import CambiarClave from '@/components/CambiarClave'
 
 export default async function ConfiguracionPage() {
@@ -17,10 +16,7 @@ export default async function ConfiguracionPage() {
     .eq('auth_user_id', data.user.id)
     .maybeSingle()
 
-  if (!cuenta?.activo) {
-    await redirigirSiStaff(supabase)
-    redirect('/login')
-  }
+  if (!cuenta?.activo) redirect('/login')
 
   const tarjeta = 'rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-900'
 
