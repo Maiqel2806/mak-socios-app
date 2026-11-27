@@ -25,7 +25,8 @@ async function autorizar() {
 
 // Biblioteca de ejercicios con disponibilidad según el equipo activo
 export async function GET() {
-  if (!(await autorizar())) return error('No autorizado.', 403)
+  const staff = await autorizar()
+  if (!staff) return error('No autorizado.', 403)
 
   const [equipamiento, personalizados] = await Promise.all([
     cargarEquipamiento(),
@@ -59,7 +60,8 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    ejercicios,
+    // El catálogo de ejercicios es solo para administradores de la app
+    ejercicios: staff.esDueno ? ejercicios : [],
     grupos: GRUPOS,
     zonas: Object.fromEntries(Object.entries(ZONAS).map(([k, v]) => [k, v.nombre])),
   })

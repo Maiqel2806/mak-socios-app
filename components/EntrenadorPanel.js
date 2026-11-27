@@ -444,7 +444,7 @@ function Sugerencias({ borrador, onBorradorUsado }) {
 }
 
 // ------------------------------------------------------------ Panel
-export default function EntrenadorPanel() {
+export default function EntrenadorPanel({ esAdmin = false }) {
   const [pestana, setPestana] = useState('simulador')
   const [datos, setDatos] = useState(null)
   const [borrador, setBorrador] = useState(null)
@@ -459,15 +459,16 @@ export default function EntrenadorPanel() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Ejercicios: solo el administrador de la app (MAK_ADMIN_CODIGOS)
   const pestanas = [
     ['simulador', 'Simulador', Sparkles],
-    ['ejercicios', 'Ejercicios', Dumbbell],
+    ...(esAdmin ? [['ejercicios', 'Ejercicios', Dumbbell]] : []),
     ['sugerencias', 'Sugerencias', Lightbulb],
   ]
 
   return (
     <div className="mt-5">
-      <div role="tablist" aria-label="Secciones" className="mb-5 grid grid-cols-3 gap-1 rounded-2xl bg-white p-1 shadow-sm dark:bg-zinc-900">
+      <div role="tablist" aria-label="Secciones" className={`mb-5 grid ${esAdmin ? 'grid-cols-3' : 'grid-cols-2'} gap-1 rounded-2xl bg-white p-1 shadow-sm dark:bg-zinc-900`}>
         {pestanas.map(([v, t, Icono]) => (
           <button key={v} type="button" role="tab" aria-selected={pestana === v} onClick={() => setPestana(v)}
             className={`inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl text-[15px] font-bold ${pestana === v ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950' : 'text-zinc-600 dark:text-zinc-300'}`}>
@@ -477,7 +478,7 @@ export default function EntrenadorPanel() {
       </div>
 
       {pestana === 'simulador' && <Simulador zonas={datos?.zonas} onSugerir={sugerir} />}
-      {pestana === 'ejercicios' && <Biblioteca datos={datos} onSugerir={sugerir} />}
+      {esAdmin && pestana === 'ejercicios' && <Biblioteca datos={datos} onSugerir={sugerir} />}
       {pestana === 'sugerencias' && <Sugerencias borrador={borrador} onBorradorUsado={() => setBorrador(null)} />}
     </div>
   )

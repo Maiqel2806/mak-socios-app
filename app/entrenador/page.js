@@ -30,7 +30,9 @@ export default async function EntrenadorPage() {
               <p className="mt-3 text-sm font-bold text-cyan-300">{staff.cargo} · MAK FITNESS</p>
               <h1 className="mak-display mt-1 text-3xl text-white sm:text-4xl">Hola, {staff.nombre.split(' ')[0]}</h1>
               <p className="mt-1 max-w-xl text-[15px] text-zinc-300">
-                Prueba las rutinas que genera la app, revisa los ejercicios y envía tus sugerencias de mejora.
+                {staff.esDueno
+                  ? 'Prueba las rutinas que genera la app, revisa los ejercicios y gestiona las sugerencias del equipo.'
+                  : 'Prueba las rutinas que genera la app y envía tus sugerencias de mejora.'}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -48,7 +50,7 @@ export default async function EntrenadorPage() {
       </header>
 
       <div className="mx-auto w-full max-w-4xl px-4">
-        <EntrenadorPanel />
+        <EntrenadorPanel esAdmin={staff.esDueno} />
       </div>
     </main>
   )
